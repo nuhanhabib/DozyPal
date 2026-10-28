@@ -53,7 +53,7 @@ jobs:
           mkdir -p dist
           cp app/build/outputs/apk/release/*.apk dist/
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: DozyPal-apk
           path: dist/*.apk
