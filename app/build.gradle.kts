@@ -64,7 +64,7 @@ android {
 
 // Kept to the minimum: Firebase (anonymous sign-in + database for Scroll Battles).
 dependencies {
-    implementation(platform("com.google.firebase:firebase-bom:33.5.1"))
+    implementation(platform("com.google.firebase:firebase-bom:35.1.0"))
     implementation("com.google.firebase:firebase-auth")
     implementation("com.google.firebase:firebase-firestore")
 }
