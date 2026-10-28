@@ -15,15 +15,32 @@
     <string name="restricted_body">Is the switch greyed out? On Android 13 and newer, open App info, tap the ⋮ menu in the top corner and choose \"Allow restricted settings\", then try again.</string>
     <string name="restricted_button">Open App info</string>
 
+    <string name="greeting">Hi, %1$s 👋</string>
+    <string name="reset_note">A reel counts after you watch it for 5 seconds. Counts reset automatically every night at 12:00 AM.</string>
+
     <string name="counter_title">Reel counter</string>
     <string name="counter_body">Shows a small counter in the corner while you watch reels.</string>
     <string name="position_title">Counter position</string>
     <string name="left">Left</string>
     <string name="right">Right</string>
-    <string name="character_title">Your DozyPal</string>
-    <string name="boy">Boy</string>
-    <string name="girl">Girl</string>
-    <string name="pick_title">Pick your DozyPal</string>
+    <string name="opacity_title">Counter opacity: %1$d%%</string>
+    <string name="opacity_description">Counter opacity</string>
+
+    <string name="profile_title">Your profile</string>
+    <string name="profile_summary">%1$s · %2$s avatar</string>
+    <string name="edit_profile">Edit profile</string>
+
+    <string name="welcome_title">Welcome to DozyPal 😴</string>
+    <string name="welcome_body">Tell us a little about you so your DozyPal can cheer you on (and tell you when it\'s time to stop).</string>
+    <string name="name_label">What\'s your name?</string>
+    <string name="name_hint">Your name</string>
+    <string name="gender_label">Choose your avatar</string>
+    <string name="male">Male</string>
+    <string name="female">Female</string>
+    <string name="name_privacy">Your name stays on this phone. It is only used in DozyPal\'s little messages.</string>
+    <string name="continue_button">Continue</string>
+    <string name="error_name">Please enter your name (letters only, up to 20 characters).</string>
+    <string name="error_gender">Please choose male or female.</string>
 
     <string name="friends_title">Friends and Scroll Battles</string>
     <string name="friends_body">Coming soon: add friends with a code and see who scrolled less today.</string>

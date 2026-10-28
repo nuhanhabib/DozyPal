@@ -19,6 +19,12 @@
             android:textStyle="bold" />
 
         <TextView
+            android:id="@+id/greeting"
+            style="@style/CardTitle"
+            android:layout_marginTop="4dp"
+            android:textSize="18sp" />
+
+        <TextView
             style="@style/CardBody"
             android:text="@string/tagline" />
 
@@ -81,6 +87,11 @@
                 style="@style/CardBody"
                 android:layout_width="wrap_content"
                 android:text="@string/reels_today" />
+            <TextView
+                style="@style/CardBody"
+                android:gravity="center"
+                android:text="@string/reset_note"
+                android:textSize="12sp" />
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -166,26 +177,28 @@
             </RadioGroup>
 
             <TextView
+                android:id="@+id/opacity_label"
                 style="@style/CardTitle"
-                android:layout_marginTop="16dp"
-                android:text="@string/character_title" />
-            <RadioGroup
-                android:id="@+id/character_group"
+                android:layout_marginTop="16dp" />
+            <SeekBar
+                android:id="@+id/opacity_seek"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal">
-                <RadioButton
-                    android:id="@+id/character_boy"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/boy" />
-                <RadioButton
-                    android:id="@+id/character_girl"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="16dp"
-                    android:text="@string/girl" />
-            </RadioGroup>
+                android:layout_marginTop="8dp"
+                android:contentDescription="@string/opacity_description" />
+        </LinearLayout>
+
+        <LinearLayout style="@style/Card">
+            <TextView style="@style/CardTitle" android:text="@string/profile_title" />
+            <TextView
+                android:id="@+id/profile_summary"
+                style="@style/CardBody" />
+            <Button
+                android:id="@+id/edit_profile"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="@string/edit_profile" />
         </LinearLayout>
 
         <LinearLayout style="@style/Card">

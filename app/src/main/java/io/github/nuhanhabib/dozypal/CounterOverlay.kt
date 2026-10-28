@@ -6,19 +6,22 @@ import android.graphics.PixelFormat
 import android.graphics.Typeface
 import android.graphics.drawable.GradientDrawable
 import android.view.Gravity
+import android.view.View
 import android.view.WindowManager
 import android.widget.TextView
 
 /**
- * The small counter pill shown in the top corner over Facebook/Instagram.
- * It uses an accessibility overlay window, so no "draw over other apps" permission is needed,
- * and it ignores touches so it never blocks the reel underneath.
+ * The small counter pill shown in the top corner over Facebook/Instagram, plus a short-lived
+ * nudge bubble under it. Both use accessibility overlay windows, so no "draw over other apps"
+ * permission is needed, and both ignore touches so they never block the reel underneath.
  */
 class CounterOverlay(context: Context) {
 
     private val windowManager = context.getSystemService(WindowManager::class.java)
     private val density = context.resources.displayMetrics.density
-    private var attached = false
+    private val screenWidth = context.resources.displayMetrics.widthPixels
+    private var counterAttached = false
+    private var bubbleAttached = false
     private var onLeft = false
 
     private val label = TextView(context).apply {
@@ -28,30 +31,65 @@ class CounterOverlay(context: Context) {
         setPadding(dp(12), dp(6), dp(12), dp(6))
         background = GradientDrawable().apply {
             cornerRadius = dp(20).toFloat()
-            setColor(0xCC7C3AED.toInt())
+            setColor(0xFF7C3AED.toInt())
         }
     }
 
-    fun show(count: Int, left: Boolean) {
+    private val bubble = TextView(context).apply {
+        textSize = 14f
+        setTextColor(0xFF2E1065.toInt())
+        maxWidth = (screenWidth * 0.7f).toInt()
+        setPadding(dp(14), dp(10), dp(14), dp(10))
+        background = GradientDrawable().apply {
+            cornerRadius = dp(16).toFloat()
+            setColor(0xF2FFFFFF.toInt())
+            setStroke(dp(2), 0xFF7C3AED.toInt())
+        }
+    }
+
+    private val hideBubble = Runnable { removeBubble() }
+
+    fun show(count: Int, left: Boolean, opacityPercent: Int) {
         update(count)
-        if (attached && left == onLeft) return
-        if (attached) windowManager.removeView(label)
+        label.alpha = opacityPercent / 100f
+        if (counterAttached && left == onLeft) return
+        if (counterAttached) windowManager.removeView(label)
+        removeBubble()
         onLeft = left
-        windowManager.addView(label, layoutParams(left))
-        attached = true
+        windowManager.addView(label, layoutParams(left, y = dp(72)))
+        counterAttached = true
     }
 
     fun update(count: Int) {
         label.text = "${Mood.forCount(count).emoji} $count"
     }
 
-    fun hide() {
-        if (!attached) return
-        windowManager.removeView(label)
-        attached = false
+    fun showBubble(text: String) {
+        if (!counterAttached) return
+        bubble.text = text
+        bubble.removeCallbacks(hideBubble)
+        if (!bubbleAttached) {
+            windowManager.addView(bubble, layoutParams(onLeft, y = dp(116)))
+            bubbleAttached = true
+        }
+        bubble.postDelayed(hideBubble, BUBBLE_MS)
     }
 
-    private fun layoutParams(left: Boolean) = WindowManager.LayoutParams(
+    fun hide() {
+        removeBubble()
+        if (!counterAttached) return
+        windowManager.removeView(label)
+        counterAttached = false
+    }
+
+    private fun removeBubble() {
+        bubble.removeCallbacks(hideBubble)
+        if (!bubbleAttached) return
+        windowManager.removeView(bubble)
+        bubbleAttached = false
+    }
+
+    private fun layoutParams(left: Boolean, y: Int) = WindowManager.LayoutParams(
         WindowManager.LayoutParams.WRAP_CONTENT,
         WindowManager.LayoutParams.WRAP_CONTENT,
         WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY,
@@ -62,8 +100,12 @@ class CounterOverlay(context: Context) {
     ).apply {
         gravity = Gravity.TOP or if (left) Gravity.START else Gravity.END
         x = dp(12)
-        y = dp(72)
+        this.y = y
     }
 
     private fun dp(value: Int) = (value * density).toInt()
+
+    private companion object {
+        const val BUBBLE_MS = 4_500L
+    }
 }

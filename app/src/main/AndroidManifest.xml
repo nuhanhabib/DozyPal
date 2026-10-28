@@ -20,6 +20,11 @@
             </intent-filter>
         </activity>
 
+        <activity
+            android:name=".OnboardingActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
+
         <!-- Only the Android system (which holds BIND_ACCESSIBILITY_SERVICE) can bind to this. -->
         <service
             android:name=".ReelCounterService"

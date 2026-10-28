@@ -1,12 +1,16 @@
 package io.github.nuhanhabib.dozypal
 
 import android.graphics.Rect
+import android.os.Build
 import android.os.SystemClock
 import android.view.accessibility.AccessibilityEvent
 import android.view.accessibility.AccessibilityNodeInfo
 
+enum class ReelChange { NONE, FORWARD, BACKWARD }
+
 /**
- * Decides whether a scroll event inside Facebook/Instagram means "the user swiped to a new reel".
+ * Decides whether a scroll event inside Facebook/Instagram means "the user moved to another reel".
+ * The service then waits a few seconds before counting, so fast scrolling doesn't count.
  *
  * Facebook and Instagram do not offer any official way to know this, so these are heuristics.
  * When Meta changes its apps, this file is the one to update. The rules:
@@ -14,8 +18,8 @@ import android.view.accessibility.AccessibilityNodeInfo
  *     (normal feeds show many posts at once, so they don't match). Instagram's pager is also
  *     recognised by its view id.
  *  2. The screen must mention "Reels", so full-screen stories or long videos are skipped.
- *  3. Only forward swipes count, at most one per gesture.
- *  4. Sponsored reels (ads) are not counted.
+ *  3. Forward and backward moves are reported separately; only forward ones can be counted.
+ *  4. Sponsored reels (ads) are not counted ([isSponsoredNow]).
  *
  * Only labels such as "Reels" or "Sponsored" are checked. Nothing is stored or sent.
  */
@@ -25,41 +29,47 @@ class ReelDetector(
 ) {
     private var lastSourceKey: String? = null
     private var lastIndex = -1
-    private var lastCountAt = 0L
+    private var lastSwipeAt = 0L
     private var reelsScreenCheckedAt = 0L
     private var reelsScreenCached = false
 
-    fun isNewReel(event: AccessibilityEvent, app: ReelApp): Boolean {
-        if (event.eventType != AccessibilityEvent.TYPE_VIEW_SCROLLED) return false
-        val source = event.source ?: return false
-        if (!looksLikeReelPager(source, app)) return false
+    fun onScroll(event: AccessibilityEvent, app: ReelApp): ReelChange {
+        if (event.eventType != AccessibilityEvent.TYPE_VIEW_SCROLLED) return ReelChange.NONE
+        val source = event.source ?: return ReelChange.NONE
+        if (!looksLikeReelPager(source, app)) return ReelChange.NONE
 
         val now = SystemClock.uptimeMillis()
         val sourceKey = "${app.name}:${source.viewIdResourceName ?: source.className}"
         val index = event.fromIndex
 
-        // First scroll seen on this pager: remember where we are, don't count yet.
+        // First scroll seen on this pager: remember where we are.
         if (sourceKey != lastSourceKey) {
             lastSourceKey = sourceKey
             lastIndex = index
-            lastCountAt = now
-            return false
+            lastSwipeAt = now
+            return ReelChange.NONE
         }
 
-        val movedForward = if (index >= 0 && lastIndex >= 0) {
-            val forward = index > lastIndex
+        if (index >= 0 && lastIndex >= 0) {
+            val change = when {
+                index > lastIndex -> ReelChange.FORWARD
+                index < lastIndex -> ReelChange.BACKWARD
+                else -> ReelChange.NONE
+            }
             lastIndex = index
-            forward
-        } else {
-            // The app doesn't report item positions: count one per swipe gesture instead.
-            lastIndex = index
-            now - lastCountAt > SWIPE_GAP_MS
+            return change
         }
-        if (!movedForward || now - lastCountAt < MIN_GAP_MS) return false
 
-        lastCountAt = now
-        return !isSponsored(rootProvider())
+        // The app doesn't report item positions: treat each swipe gesture as one move.
+        lastIndex = index
+        if (now - lastSwipeAt < SWIPE_GAP_MS) return ReelChange.NONE
+        lastSwipeAt = now
+        val scrolledUp = Build.VERSION.SDK_INT >= Build.VERSION_CODES.P && event.scrollDeltaY < 0
+        return if (scrolledUp) ReelChange.BACKWARD else ReelChange.FORWARD
     }
+
+    fun isSponsoredNow(): Boolean =
+        anyVisibleNode(rootProvider()) { label -> AD_WORDS.any { label.equals(it, ignoreCase = true) } }
 
     private fun looksLikeReelPager(source: AccessibilityNodeInfo, app: ReelApp): Boolean {
         val id = source.viewIdResourceName.orEmpty()
@@ -81,9 +91,6 @@ class ReelDetector(
         }
         return reelsScreenCached
     }
-
-    private fun isSponsored(root: AccessibilityNodeInfo?): Boolean =
-        anyVisibleNode(root) { label -> AD_WORDS.any { label.equals(it, ignoreCase = true) } }
 
     /** Breadth-first search over visible on-screen labels, capped so it stays fast. */
     private inline fun anyVisibleNode(
@@ -108,7 +115,6 @@ class ReelDetector(
 
     companion object {
         private const val SWIPE_GAP_MS = 900L
-        private const val MIN_GAP_MS = 350L
         private const val REELS_CHECK_CACHE_MS = 3_000L
         private const val MAX_NODES = 500
 

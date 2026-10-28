@@ -8,10 +8,11 @@ No ads, no paid version, no account needed.
 
 ## Features
 
-- 🔢 **Reel counter:** counts only reels (not long videos or the normal feed) in Facebook and Instagram.
-- 🫧 **Floating counter:** a small pill in the top-left or top-right corner. It ignores touches, so it never gets in the way.
+- 🔢 **Reel counter:** counts only reels (not long videos or the normal feed) in Facebook and Instagram, once you have watched one for 5 seconds.
+- 🫧 **Floating counter:** a small pill in the top-left or top-right corner with adjustable opacity. It hides on the home and lock screen and ignores touches, so it never gets in the way.
 - 🔘 **On/off switch:** turn counting off whenever you want.
-- 😪 **Sleepy character:** pick a boy or girl. The more reels you watch, the droopier they get. Resets every day.
+- 👋 **Personal:** tell DozyPal your name and pick a male or female avatar. Little bubbles pop up at milestones and late at night ("Hey Nuhan, put the phone down for a bit 😴").
+- 😪 **Sleepy character:** The more reels you watch, the droopier they get. Resets every day.
 - 🚫 **Ads aren't counted:** sponsored reels are skipped.
 - 🔒 **Private:** no internet permission, nothing leaves your phone.
 - 👫 **Coming soon:** friends with friend codes, leaderboards and "Scroll Battles".

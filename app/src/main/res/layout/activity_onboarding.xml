@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_horizontal"
+        android:orientation="vertical"
+        android:padding="24dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="@string/welcome_title"
+            android:textColor="@color/purple"
+            android:textSize="26sp"
+            android:textStyle="bold" />
+
+        <TextView
+            style="@style/CardBody"
+            android:gravity="center"
+            android:text="@string/welcome_body" />
+
+        <io.github.nuhanhabib.dozypal.CharacterView
+            android:id="@+id/onboarding_character"
+            android:layout_width="180dp"
+            android:layout_height="180dp"
+            android:layout_marginTop="8dp" />
+
+        <LinearLayout style="@style/Card">
+            <TextView style="@style/CardTitle" android:text="@string/name_label" />
+            <EditText
+                android:id="@+id/name_input"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="@string/name_hint"
+                android:importantForAutofill="no"
+                android:inputType="textPersonName|textCapWords"
+                android:maxLength="20"
+                android:singleLine="true" />
+
+            <TextView
+                style="@style/CardTitle"
+                android:layout_marginTop="16dp"
+                android:text="@string/gender_label" />
+            <RadioGroup
+                android:id="@+id/gender_group"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+                <RadioButton
+                    android:id="@+id/gender_male"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/male" />
+                <RadioButton
+                    android:id="@+id/gender_female"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
+                    android:text="@string/female" />
+            </RadioGroup>
+
+            <TextView
+                android:id="@+id/onboarding_error"
+                style="@style/CardBody"
+                android:layout_marginTop="8dp"
+                android:textColor="#B91C1C"
+                android:visibility="gone" />
+
+            <TextView
+                style="@style/CardBody"
+                android:layout_marginTop="8dp"
+                android:text="@string/name_privacy" />
+        </LinearLayout>
+
+        <Button
+            android:id="@+id/onboarding_continue"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="@string/continue_button" />
+    </LinearLayout>
+</ScrollView>
