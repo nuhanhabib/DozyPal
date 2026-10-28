@@ -2,12 +2,34 @@
 <resources>
     <string name="app_name">DozyPal</string>
     <string name="service_label">DozyPal reel counter</string>
-    <string name="service_description">DozyPal counts how many Facebook and Instagram reels you swipe through and shows a small counter on screen. It only listens inside Facebook and Instagram, never reads or saves what is on your screen, and has no internet access.</string>
+    <string name="service_description">DozyPal counts how many Facebook and Instagram reels, TikToks and YouTube Shorts you watch and shows a small counter on screen. It only listens inside those four apps, never reads or saves what is on your screen, and has no internet access.</string>
 
     <string name="tagline">A sleepy little pal who gets droopier with every reel you scroll.</string>
     <string name="reels_today">reels today</string>
     <string name="facebook">Facebook</string>
     <string name="instagram">Instagram</string>
+    <string name="tiktok">TikTok</string>
+    <string name="youtube">YouTube Shorts</string>
+
+    <string name="reports_title">Reports</string>
+    <string name="back">Back</string>
+    <string name="tab_daily">Daily</string>
+    <string name="tab_weekly">Weekly</string>
+    <string name="tab_monthly">Monthly</string>
+    <string name="report_label_day">reels today</string>
+    <string name="report_label_week">reels in the last 7 days</string>
+    <string name="report_label_month">reels in the last 30 days</string>
+    <string name="report_prev_day">yesterday</string>
+    <string name="report_prev_week">the week before</string>
+    <string name="report_prev_month">the month before</string>
+    <string name="report_more">▲ %1$d%% more than %2$s</string>
+    <string name="report_less">▼ %1$d%% less than %2$s 🎉</string>
+    <string name="report_same">Same as %1$s</string>
+    <string name="report_no_previous">No data for %1$s yet.</string>
+    <string name="report_highlights">Highlights</string>
+    <string name="report_stats_day">Yesterday: %1$d reels\nMood: %2$s</string>
+    <string name="report_stats_range">Daily average: %1$d reels\nBusiest day: %2$s · %3$d\nCalmest day: %4$s · %5$d</string>
+    <string name="report_by_app">By app</string>
 
     <string name="setup_title">One step left: turn on DozyPal</string>
     <string name="setup_body">DozyPal needs Accessibility access to notice when you swipe to a new reel. Open Accessibility settings, tap DozyPal (it may be under \"Downloaded apps\") and switch it on.</string>
@@ -16,18 +38,17 @@
     <string name="restricted_button">Open App info</string>
 
     <string name="greeting">Hi, %1$s 👋</string>
-    <string name="reset_note">A reel counts after you watch it for 5 seconds. Counts reset automatically every night at 12:00 AM.</string>
+    <string name="reset_note">A reel counts after you watch it for 3 seconds. Counts reset automatically every night at 12:00 AM.</string>
 
     <string name="counter_title">Reel counter</string>
     <string name="counter_body">Shows a small counter in the corner while you watch reels.</string>
     <string name="position_title">Counter position</string>
     <string name="left">Left</string>
     <string name="right">Right</string>
+    <string name="drag_hint">Tip: drag the counter up or down along the edge to move it.</string>
     <string name="opacity_title">Counter opacity: %1$d%%</string>
     <string name="opacity_description">Counter opacity</string>
 
-    <string name="profile_title">Your profile</string>
-    <string name="profile_summary">%1$s · %2$s avatar</string>
     <string name="edit_profile">Edit profile</string>
 
     <string name="welcome_title">Welcome to DozyPal 😴</string>
@@ -45,5 +66,5 @@
     <string name="friends_title">Friends and Scroll Battles</string>
     <string name="friends_body">Coming soon: add friends with a code and see who scrolled less today.</string>
     <string name="privacy_title">Your privacy</string>
-    <string name="privacy_body">DozyPal only counts swipes inside Facebook and Instagram. It never reads messages, never saves what is on your screen, and this version has no internet access at all. Counts stay on your phone and reset every day.</string>
+    <string name="privacy_body">DozyPal only counts swipes inside Facebook, Instagram, TikTok and YouTube. It never reads messages, never saves what is on your screen, and this version has no internet access at all. Counts stay on your phone and reset every day.</string>
 </resources>

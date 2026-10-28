@@ -10,22 +10,45 @@
         android:orientation="vertical"
         android:padding="16dp">
 
-        <TextView
-            android:layout_width="wrap_content"
+        <!-- Header: title on the left, Reports and Profile on the top-right. -->
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/app_name"
-            android:textColor="@color/purple"
-            android:textSize="28sp"
-            android:textStyle="bold" />
-
-        <TextView
-            android:id="@+id/greeting"
-            style="@style/CardTitle"
-            android:layout_marginTop="4dp"
-            android:textSize="18sp" />
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/app_name"
+                    android:textColor="@color/purple"
+                    android:textSize="28sp"
+                    android:textStyle="bold" />
+                <TextView
+                    android:id="@+id/greeting"
+                    style="@style/CardTitle"
+                    android:textSize="18sp" />
+            </LinearLayout>
+            <ImageButton
+                android:id="@+id/open_reports"
+                style="@style/IconButton"
+                android:contentDescription="@string/reports_title"
+                android:src="@drawable/ic_chart" />
+            <ImageButton
+                android:id="@+id/edit_profile"
+                style="@style/IconButton"
+                android:layout_marginStart="8dp"
+                android:contentDescription="@string/edit_profile"
+                android:src="@drawable/ic_person" />
+        </LinearLayout>
 
         <TextView
             style="@style/CardBody"
+            android:layout_marginTop="8dp"
             android:text="@string/tagline" />
 
         <!-- Shown until the accessibility service is switched on. -->
@@ -38,9 +61,10 @@
             <TextView style="@style/CardBody" android:text="@string/setup_body" />
             <Button
                 android:id="@+id/setup_button"
+                style="@style/PrimaryButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
+                android:layout_marginTop="12dp"
                 android:text="@string/setup_button" />
 
             <LinearLayout
@@ -50,12 +74,14 @@
                 android:orientation="vertical">
                 <TextView
                     style="@style/CardBody"
-                    android:layout_marginTop="8dp"
+                    android:layout_marginTop="12dp"
                     android:text="@string/restricted_body" />
                 <Button
                     android:id="@+id/restricted_button"
+                    style="@style/SecondaryButton"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
                     android:text="@string/restricted_button" />
             </LinearLayout>
         </LinearLayout>
@@ -96,39 +122,29 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:orientation="horizontal">
+                <LinearLayout style="@style/AppCount">
+                    <TextView android:id="@+id/facebook_count" style="@style/AppCountNumber" />
+                    <TextView style="@style/AppCountLabel" android:text="@string/facebook" />
+                </LinearLayout>
+                <LinearLayout style="@style/AppCount">
+                    <TextView android:id="@+id/instagram_count" style="@style/AppCountNumber" />
+                    <TextView style="@style/AppCountLabel" android:text="@string/instagram" />
+                </LinearLayout>
+            </LinearLayout>
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
                 android:layout_marginTop="12dp"
                 android:orientation="horizontal">
-
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:gravity="center"
-                    android:orientation="vertical">
-                    <TextView
-                        android:id="@+id/facebook_count"
-                        style="@style/CardTitle"
-                        android:textSize="22sp" />
-                    <TextView
-                        style="@style/CardBody"
-                        android:layout_width="wrap_content"
-                        android:text="@string/facebook" />
+                <LinearLayout style="@style/AppCount">
+                    <TextView android:id="@+id/tiktok_count" style="@style/AppCountNumber" />
+                    <TextView style="@style/AppCountLabel" android:text="@string/tiktok" />
                 </LinearLayout>
-
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:gravity="center"
-                    android:orientation="vertical">
-                    <TextView
-                        android:id="@+id/instagram_count"
-                        style="@style/CardTitle"
-                        android:textSize="22sp" />
-                    <TextView
-                        style="@style/CardBody"
-                        android:layout_width="wrap_content"
-                        android:text="@string/instagram" />
+                <LinearLayout style="@style/AppCount">
+                    <TextView android:id="@+id/youtube_count" style="@style/AppCountNumber" />
+                    <TextView style="@style/AppCountLabel" android:text="@string/youtube" />
                 </LinearLayout>
             </LinearLayout>
         </LinearLayout>
@@ -175,6 +191,7 @@
                     android:layout_marginStart="16dp"
                     android:text="@string/right" />
             </RadioGroup>
+            <TextView style="@style/CardBody" android:text="@string/drag_hint" />
 
             <TextView
                 android:id="@+id/opacity_label"
@@ -186,19 +203,6 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
                 android:contentDescription="@string/opacity_description" />
-        </LinearLayout>
-
-        <LinearLayout style="@style/Card">
-            <TextView style="@style/CardTitle" android:text="@string/profile_title" />
-            <TextView
-                android:id="@+id/profile_summary"
-                style="@style/CardBody" />
-            <Button
-                android:id="@+id/edit_profile"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:text="@string/edit_profile" />
         </LinearLayout>
 
         <LinearLayout style="@style/Card">

@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+            <ImageButton
+                android:id="@+id/reports_back"
+                style="@style/IconButton"
+                android:contentDescription="@string/back"
+                android:src="@drawable/ic_back" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="12dp"
+                android:text="@string/reports_title"
+                android:textColor="@color/purple"
+                android:textSize="26sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:background="@drawable/segment_bg"
+            android:orientation="horizontal"
+            android:padding="4dp">
+            <TextView android:id="@+id/tab_daily" style="@style/SegmentTab" android:text="@string/tab_daily" />
+            <TextView android:id="@+id/tab_weekly" style="@style/SegmentTab" android:text="@string/tab_weekly" />
+            <TextView android:id="@+id/tab_monthly" style="@style/SegmentTab" android:text="@string/tab_monthly" />
+        </LinearLayout>
+
+        <LinearLayout style="@style/Card" android:gravity="center_horizontal">
+            <TextView
+                android:id="@+id/report_total"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/text"
+                android:textSize="48sp"
+                android:textStyle="bold" />
+            <TextView
+                android:id="@+id/report_total_label"
+                style="@style/CardBody"
+                android:layout_width="wrap_content" />
+            <TextView
+                android:id="@+id/report_comparison"
+                style="@style/CardBody"
+                android:layout_marginTop="8dp"
+                android:gravity="center"
+                android:textColor="@color/purple" />
+        </LinearLayout>
+
+        <LinearLayout android:id="@+id/report_chart_card" style="@style/Card">
+            <io.github.nuhanhabib.dozypal.BarChartView
+                android:id="@+id/report_chart"
+                android:layout_width="match_parent"
+                android:layout_height="180dp" />
+        </LinearLayout>
+
+        <LinearLayout style="@style/Card">
+            <TextView style="@style/CardTitle" android:text="@string/report_highlights" />
+            <TextView
+                android:id="@+id/report_stats"
+                style="@style/CardBody"
+                android:lineSpacingExtra="4dp" />
+        </LinearLayout>
+
+        <LinearLayout
+            style="@style/Card"
+            android:layout_marginBottom="16dp">
+            <TextView style="@style/CardTitle" android:text="@string/report_by_app" />
+            <LinearLayout
+                android:id="@+id/report_breakdown"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical" />
+        </LinearLayout>
+    </LinearLayout>
+</ScrollView>

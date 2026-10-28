@@ -23,15 +23,13 @@ class MainActivity : Activity() {
     private lateinit var moodTitle: TextView
     private lateinit var moodLine: TextView
     private lateinit var totalCount: TextView
-    private lateinit var facebookCount: TextView
-    private lateinit var instagramCount: TextView
+    private lateinit var appCounts: Map<ReelApp, TextView>
     private lateinit var setupCard: View
     private lateinit var restrictedGroup: View
     private lateinit var counterSwitch: Switch
     private lateinit var sideGroup: RadioGroup
     private lateinit var opacityLabel: TextView
     private lateinit var opacitySeek: SeekBar
-    private lateinit var profileSummary: TextView
 
     // Counts change in the background service; refresh the screen live when they do.
     private val prefsListener = SharedPreferences.OnSharedPreferenceChangeListener { _, _ -> render(animate = true) }
@@ -46,15 +44,18 @@ class MainActivity : Activity() {
         moodTitle = findViewById(R.id.mood_title)
         moodLine = findViewById(R.id.mood_line)
         totalCount = findViewById(R.id.total_count)
-        facebookCount = findViewById(R.id.facebook_count)
-        instagramCount = findViewById(R.id.instagram_count)
+        appCounts = mapOf(
+            ReelApp.FACEBOOK to findViewById(R.id.facebook_count),
+            ReelApp.INSTAGRAM to findViewById(R.id.instagram_count),
+            ReelApp.TIKTOK to findViewById(R.id.tiktok_count),
+            ReelApp.YOUTUBE to findViewById(R.id.youtube_count),
+        )
         setupCard = findViewById(R.id.setup_card)
         restrictedGroup = findViewById(R.id.restricted_group)
         counterSwitch = findViewById(R.id.counter_switch)
         sideGroup = findViewById(R.id.side_group)
         opacityLabel = findViewById(R.id.opacity_label)
         opacitySeek = findViewById(R.id.opacity_seek)
-        profileSummary = findViewById(R.id.profile_summary)
 
         findViewById<Button>(R.id.setup_button).setOnClickListener {
             startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
@@ -62,7 +63,10 @@ class MainActivity : Activity() {
         findViewById<Button>(R.id.restricted_button).setOnClickListener {
             startActivity(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.fromParts("package", packageName, null)))
         }
-        findViewById<Button>(R.id.edit_profile).setOnClickListener { openOnboarding() }
+        findViewById<View>(R.id.edit_profile).setOnClickListener { openOnboarding() }
+        findViewById<View>(R.id.open_reports).setOnClickListener {
+            startActivity(Intent(this, ReportsActivity::class.java))
+        }
         restrictedGroup.visibility = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) View.VISIBLE else View.GONE
 
         counterSwitch.isChecked = store.counterEnabled
@@ -104,17 +108,13 @@ class MainActivity : Activity() {
         val name = store.userName ?: Nudges.DEFAULT_NAME
         greeting.text = getString(R.string.greeting, name)
         totalCount.text = total.toString()
-        facebookCount.text = store.count(ReelApp.FACEBOOK).toString()
-        instagramCount.text = store.count(ReelApp.INSTAGRAM).toString()
+        appCounts.forEach { (app, view) -> view.text = store.count(app).toString() }
         moodTitle.text = "${mood.emoji} ${mood.title}"
         moodLine.text = mood.line
         character.isGirl = store.isFemale
         character.setReelCount(total, animate)
         counterSwitch.isChecked = store.counterEnabled
         opacityLabel.text = getString(R.string.opacity_title, store.overlayOpacity)
-        profileSummary.text = getString(
-            R.string.profile_summary, name, getString(if (store.isFemale) R.string.female else R.string.male)
-        )
     }
 
     private fun openOnboarding() {

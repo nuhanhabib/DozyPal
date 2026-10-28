@@ -4,14 +4,14 @@ DozyPal is a free, open-source app made for fun. It is built to know as little a
 
 ## What DozyPal uses
 
-- **Accessibility Service**, limited to Facebook and Instagram. DozyPal gets notified when you scroll inside those two apps, and checks on-screen labels such as "Reels" and "Sponsored" to decide whether you moved to a new reel. It does not read messages or comments, and it does not save or send anything it sees.
-- **Private app storage** on your phone, for today's reel counts (one number for Facebook, one for Instagram) and your settings (counter on/off, counter position, boy/girl character). Counts reset every day.
+- **Accessibility Service**, limited to Facebook, Instagram, TikTok and YouTube. DozyPal gets notified when you scroll inside those four apps, and checks on-screen labels such as "Reels", "Shorts" and "Sponsored" to decide whether you moved to a new reel. It does not read messages or comments, and it does not save or send anything it sees.
+- **Private app storage** on your phone, for daily reel counts per app (kept up to 400 days for reports), your name and avatar choice, and your settings. Today's count resets every night.
 
 ## What DozyPal does NOT do
 
 - It has no internet permission, so it cannot send data anywhere.
 - No accounts, ads, analytics or trackers.
-- It does not watch any app except Facebook and Instagram.
+- It does not watch any app except Facebook, Instagram, TikTok and YouTube.
 
 ## Future versions
 

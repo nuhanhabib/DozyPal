@@ -9,15 +9,16 @@ import android.view.accessibility.AccessibilityNodeInfo
 enum class ReelChange { NONE, FORWARD, BACKWARD }
 
 /**
- * Decides whether a scroll event inside Facebook/Instagram means "the user moved to another reel".
+ * Decides whether a scroll event means "the user moved to another reel / short".
  * The service then waits a few seconds before counting, so fast scrolling doesn't count.
  *
- * Facebook and Instagram do not offer any official way to know this, so these are heuristics.
- * When Meta changes its apps, this file is the one to update. The rules:
+ * None of these apps offer an official way to know this, so these are heuristics.
+ * When an app changes its layout, this file is the one to update. The rules:
  *  1. The scrolled view must look like a reels pager: almost full screen, showing 1-2 items at a time
- *     (normal feeds show many posts at once, so they don't match). Instagram's pager is also
- *     recognised by its view id.
- *  2. The screen must mention "Reels", so full-screen stories or long videos are skipped.
+ *     (normal feeds show many posts at once, so they don't match). Instagram's and YouTube's pagers
+ *     are also recognised by their view ids.
+ *  2. The screen must mention "Reels" (Facebook/Instagram) or "Shorts" (YouTube), so stories and
+ *     normal long videos are skipped. TikTok needs no label.
  *  3. Forward and backward moves are reported separately; only forward ones can be counted.
  *  4. Sponsored reels (ads) are not counted ([isSponsoredNow]).
  *
@@ -30,6 +31,7 @@ class ReelDetector(
     private var lastSourceKey: String? = null
     private var lastIndex = -1
     private var lastSwipeAt = 0L
+    private var reelsScreenApp: ReelApp? = null
     private var reelsScreenCheckedAt = 0L
     private var reelsScreenCached = false
 
@@ -73,21 +75,24 @@ class ReelDetector(
 
     private fun looksLikeReelPager(source: AccessibilityNodeInfo, app: ReelApp): Boolean {
         val id = source.viewIdResourceName.orEmpty()
-        if (app == ReelApp.INSTAGRAM && INSTAGRAM_REEL_IDS.any { id.contains(it) }) return true
+        if (REEL_IDS[app].orEmpty().any { id.contains(it) }) return true
 
         val (screenWidth, screenHeight) = screenSize()
         val bounds = Rect().also { source.getBoundsInScreen(it) }
         val fullScreen = bounds.height() >= screenHeight * 0.7f && bounds.width() >= screenWidth * 0.9f
         val pagerLike = source.childCount in 1..2
-        return fullScreen && pagerLike && isReelsScreen()
+        // TikTok's whole home feed is short videos, so no "Reels"/"Shorts" label is needed there.
+        return fullScreen && pagerLike && (app == ReelApp.TIKTOK || isReelsScreen(app))
     }
 
-    private fun isReelsScreen(): Boolean {
+    private fun isReelsScreen(app: ReelApp): Boolean {
         val now = SystemClock.uptimeMillis()
-        if (now - reelsScreenCheckedAt < REELS_CHECK_CACHE_MS) return reelsScreenCached
+        if (app == reelsScreenApp && now - reelsScreenCheckedAt < REELS_CHECK_CACHE_MS) return reelsScreenCached
+        reelsScreenApp = app
         reelsScreenCheckedAt = now
+        val words = REEL_WORDS[app].orEmpty()
         reelsScreenCached = anyVisibleNode(rootProvider()) { label ->
-            REEL_WORDS.any { label.contains(it, ignoreCase = true) }
+            words.any { label.contains(it, ignoreCase = true) }
         }
         return reelsScreenCached
     }
@@ -118,8 +123,16 @@ class ReelDetector(
         private const val REELS_CHECK_CACHE_MS = 3_000L
         private const val MAX_NODES = 500
 
-        private val INSTAGRAM_REEL_IDS = listOf("clips_viewer", "clips_video", "reel_viewer")
-        private val REEL_WORDS = listOf("reels", "reel", "রিল")
+        private val REEL_IDS = mapOf(
+            ReelApp.INSTAGRAM to listOf("clips_viewer", "clips_video", "reel_viewer"),
+            ReelApp.YOUTUBE to listOf("reel_recycler", "reel_player", "shorts_"),
+        )
+        private val FB_IG_WORDS = listOf("reels", "reel", "রিল")
+        private val REEL_WORDS = mapOf(
+            ReelApp.FACEBOOK to FB_IG_WORDS,
+            ReelApp.INSTAGRAM to FB_IG_WORDS,
+            ReelApp.YOUTUBE to listOf("shorts", "শর্টস"),
+        )
         private val AD_WORDS = listOf("Sponsored", "Ad", "স্পনসর্ড", "স্পন্সর্ড", "বিজ্ঞাপন")
     }
 }

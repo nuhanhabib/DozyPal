@@ -16,8 +16,8 @@ import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 
 /**
- * Listens (only inside Facebook and Instagram, see res/xml/reel_service_config.xml) for swipes
- * to a new reel. A reel is counted once it has stayed on screen for [WATCH_MS], so fast scrolling
+ * Listens (only inside Facebook, Instagram, TikTok and YouTube, see res/xml/reel_service_config.xml)
+ * for swipes to a new reel or short. A reel is counted once it has stayed on screen for [WATCH_MS], so fast scrolling
  * doesn't count. Shows the floating counter and nudge bubbles while one of those apps is open.
  */
 class ReelCounterService : AccessibilityService() {
@@ -32,7 +32,7 @@ class ReelCounterService : AccessibilityService() {
     private var pendingApp: ReelApp? = null
     private var awayChecks = 0
 
-    // Events only arrive from Facebook/Instagram, so we poll to notice when the user leaves them.
+    // Events only arrive from the watched apps, so we poll to notice when the user leaves them.
     // Unknown (null) counts as "left": other apps' windows are hidden from us by the package filter.
     private val foregroundCheck = object : Runnable {
         override fun run() {
@@ -70,7 +70,7 @@ class ReelCounterService : AccessibilityService() {
     override fun onServiceConnected() {
         super.onServiceConnected()
         store = CountStore(this)
-        overlay = CounterOverlay(this)
+        overlay = CounterOverlay(this, onMoved = { y -> store.overlayY = y })
         keyguard = getSystemService(KeyguardManager::class.java)
         power = getSystemService(PowerManager::class.java)
         detector = ReelDetector(
@@ -137,7 +137,7 @@ class ReelCounterService : AccessibilityService() {
         if (!store.counterEnabled) return
         currentApp = app
         awayChecks = 0
-        overlay.show(store.count(app), store.overlayOnLeft, store.overlayOpacity)
+        overlay.show(store.count(app), store.overlayOnLeft, store.overlayOpacity, store.overlayY)
         handler.removeCallbacks(foregroundCheck)
         handler.postDelayed(foregroundCheck, FOREGROUND_POLL_MS)
     }
@@ -161,7 +161,7 @@ class ReelCounterService : AccessibilityService() {
     }
 
     private companion object {
-        const val WATCH_MS = 5_000L
+        const val WATCH_MS = 3_000L
         const val FOREGROUND_POLL_MS = 500L
         const val AWAY_CHECKS_TO_HIDE = 2
         const val NIGHT_NUDGE_GAP_MS = 30 * 60 * 1000L
