@@ -37,6 +37,16 @@ jobs:
             echo "No signing key available (for example a pull request from a fork). Building an unsigned APK."
           fi
 
+      - name: Prepare Firebase config
+        env:
+          GOOGLE_SERVICES_JSON_B64: ${{ secrets.GOOGLE_SERVICES_JSON_B64 }}
+        run: |
+          if [ -n "$GOOGLE_SERVICES_JSON_B64" ]; then
+            echo "$GOOGLE_SERVICES_JSON_B64" | base64 -d > app/google-services.json
+          else
+            echo "No Firebase config available. Building without Scroll Battles."
+          fi
+
       - name: Build release APK
         env:
           DOZYPAL_KEYSTORE_PASSWORD: ${{ secrets.DOZYPAL_KEYSTORE_PASSWORD }}
@@ -49,7 +59,7 @@ jobs:
       - name: Collect APK
         if: always()
         run: |
-          rm -f "$RUNNER_TEMP/dozypal.p12"
+          rm -f "$RUNNER_TEMP/dozypal.p12" app/google-services.json
           mkdir -p dist
           cp app/build/outputs/apk/release/*.apk dist/
 

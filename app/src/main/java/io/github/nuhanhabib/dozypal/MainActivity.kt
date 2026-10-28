@@ -67,6 +67,9 @@ class MainActivity : Activity() {
         findViewById<View>(R.id.open_reports).setOnClickListener {
             startActivity(Intent(this, ReportsActivity::class.java))
         }
+        findViewById<View>(R.id.open_battles).setOnClickListener {
+            startActivity(Intent(this, FriendsActivity::class.java))
+        }
         restrictedGroup.visibility = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) View.VISIBLE else View.GONE
 
         counterSwitch.isChecked = store.counterEnabled
@@ -95,6 +98,7 @@ class MainActivity : Activity() {
         store.prefs.registerOnSharedPreferenceChangeListener(prefsListener)
         setupCard.visibility = if (isCounterServiceOn()) View.GONE else View.VISIBLE
         render(animate = false)
+        if (Social.isJoined(this, store)) Social.requestSync(store)
     }
 
     override fun onPause() {

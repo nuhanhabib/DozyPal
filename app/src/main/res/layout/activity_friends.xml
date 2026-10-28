@@ -1,0 +1,237 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+            <ImageButton
+                android:id="@+id/friends_back"
+                style="@style/IconButton"
+                android:contentDescription="@string/back"
+                android:src="@drawable/ic_back" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="12dp"
+                android:text="@string/battles_title"
+                android:textColor="@color/purple"
+                android:textSize="24sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <!-- Built without Firebase config. -->
+        <LinearLayout
+            android:id="@+id/friends_unavailable"
+            style="@style/Card"
+            android:background="@drawable/card_warning"
+            android:visibility="gone">
+            <TextView style="@style/CardBody" android:text="@string/battles_unavailable" />
+        </LinearLayout>
+
+        <!-- Not joined yet. -->
+        <LinearLayout
+            android:id="@+id/join_section"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="gone">
+
+            <LinearLayout style="@style/Card">
+                <TextView style="@style/CardTitle" android:text="@string/join_title" />
+                <TextView style="@style/CardBody" android:text="@string/join_body" />
+
+                <TextView
+                    style="@style/CardTitle"
+                    android:layout_marginTop="16dp"
+                    android:text="@string/nickname_label" />
+                <EditText
+                    android:id="@+id/nickname_input"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="@string/nickname_hint"
+                    android:importantForAutofill="no"
+                    android:inputType="textPersonName"
+                    android:maxLength="20"
+                    android:singleLine="true" />
+
+                <TextView
+                    android:id="@+id/join_error"
+                    style="@style/CardBody"
+                    android:textColor="#B91C1C"
+                    android:visibility="gone" />
+
+                <Button
+                    android:id="@+id/join_google"
+                    style="@style/PrimaryButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:text="@string/join_google" />
+                <Button
+                    android:id="@+id/join_anonymous"
+                    style="@style/SecondaryButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="@string/join_anonymous" />
+                <ProgressBar
+                    android:id="@+id/join_busy"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_horizontal"
+                    android:layout_marginTop="8dp"
+                    android:visibility="gone" />
+
+                <TextView
+                    style="@style/CardBody"
+                    android:layout_marginTop="12dp"
+                    android:text="@string/join_privacy"
+                    android:textSize="12sp" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- Joined. -->
+        <LinearLayout
+            android:id="@+id/joined_section"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="gone">
+
+            <LinearLayout style="@style/Card">
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+                    <TextView
+                        style="@style/CardTitle"
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:text="@string/board_title" />
+                    <TextView
+                        android:id="@+id/refresh_board"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:background="?android:attr/selectableItemBackground"
+                        android:padding="8dp"
+                        android:text="@string/refresh"
+                        android:textColor="@color/purple"
+                        android:textStyle="bold" />
+                </LinearLayout>
+                <TextView
+                    android:id="@+id/board_subtitle"
+                    style="@style/CardBody" />
+
+                <HorizontalScrollView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:scrollbars="none">
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/segment_bg"
+                        android:orientation="horizontal"
+                        android:padding="4dp">
+                        <TextView android:id="@+id/board_battle" style="@style/SegmentTabWrap" android:text="@string/board_battle" />
+                        <TextView android:id="@+id/board_facebook" style="@style/SegmentTabWrap" android:text="@string/facebook" />
+                        <TextView android:id="@+id/board_instagram" style="@style/SegmentTabWrap" android:text="@string/instagram" />
+                        <TextView android:id="@+id/board_tiktok" style="@style/SegmentTabWrap" android:text="@string/tiktok" />
+                        <TextView android:id="@+id/board_youtube" style="@style/SegmentTabWrap" android:text="@string/youtube_short" />
+                    </LinearLayout>
+                </HorizontalScrollView>
+
+                <LinearLayout
+                    android:id="@+id/board_rows"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:orientation="vertical" />
+                <TextView
+                    style="@style/CardBody"
+                    android:layout_marginTop="8dp"
+                    android:text="@string/board_hint"
+                    android:textSize="12sp" />
+            </LinearLayout>
+
+            <LinearLayout style="@style/Card">
+                <TextView style="@style/CardTitle" android:text="@string/add_friend_title" />
+                <EditText
+                    android:id="@+id/friend_code_input"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="@string/friend_code_hint"
+                    android:importantForAutofill="no"
+                    android:inputType="textCapCharacters|textNoSuggestions"
+                    android:maxLength="11"
+                    android:singleLine="true" />
+                <Button
+                    android:id="@+id/add_friend"
+                    style="@style/PrimaryButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="@string/add_friend" />
+                <TextView
+                    android:id="@+id/add_status"
+                    style="@style/CardBody"
+                    android:visibility="gone" />
+            </LinearLayout>
+
+            <LinearLayout style="@style/Card" android:gravity="center_horizontal">
+                <TextView style="@style/CardTitle" android:text="@string/my_code_title" />
+                <TextView
+                    android:id="@+id/my_code"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:background="?android:attr/selectableItemBackground"
+                    android:fontFamily="monospace"
+                    android:letterSpacing="0.1"
+                    android:padding="4dp"
+                    android:textColor="@color/purple"
+                    android:textSize="30sp"
+                    android:textStyle="bold" />
+                <TextView
+                    style="@style/CardBody"
+                    android:layout_width="wrap_content"
+                    android:text="@string/tap_to_copy"
+                    android:textSize="12sp" />
+                <ImageView
+                    android:id="@+id/my_qr"
+                    android:layout_width="200dp"
+                    android:layout_height="200dp"
+                    android:layout_marginTop="12dp"
+                    android:contentDescription="@string/qr_description" />
+                <Button
+                    android:id="@+id/share_code"
+                    style="@style/PrimaryButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:text="@string/share_code" />
+            </LinearLayout>
+
+            <Button
+                android:id="@+id/leave_battles"
+                style="@style/SecondaryButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:layout_marginBottom="16dp"
+                android:text="@string/leave_battles" />
+        </LinearLayout>
+    </LinearLayout>
+</ScrollView>

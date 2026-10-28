@@ -54,6 +54,7 @@ class ReelCounterService : AccessibilityService() {
         }
         overlay.update(store.increment(app))
         maybeShowNudge()
+        if (Social.isJoined(this, store)) Social.requestSync(store)
     }
 
     private val screenOffReceiver = object : BroadcastReceiver() {

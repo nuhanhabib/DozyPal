@@ -208,6 +208,13 @@
         <LinearLayout style="@style/Card">
             <TextView style="@style/CardTitle" android:text="@string/friends_title" />
             <TextView style="@style/CardBody" android:text="@string/friends_body" />
+            <Button
+                android:id="@+id/open_battles"
+                style="@style/PrimaryButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:text="@string/open_battles" />
         </LinearLayout>
 
         <LinearLayout

@@ -1,0 +1,124 @@
+rules_version = '2';
+
+// DozyPal Scroll Battles security rules.
+// Paste into Firebase console -> Firestore Database -> Rules, then Publish.
+//
+// Data:
+//   users/{uid}                     nickname, friendCode, avatar, day, counts, total, updatedAt
+//   users/{uid}/friends/{friendUid} code, addedAt   (friendship is stored on both sides)
+//   friendCodes/{code}              uid
+//
+// Guarantees:
+//   - Only you can write your own profile; nobody can list all users.
+//   - Your profile is readable only by you and by people in your friends list.
+//   - Someone can become your friend only if they know your friend code.
+//   - Profiles are validated (fields, nickname, count limits, total = sum of counts).
+//   - Counts can't go down during the same day, and you can save at most once every 10 seconds.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isUser(uid) {
+      return signedIn() && request.auth.uid == uid;
+    }
+
+    function userDoc(uid) {
+      return /databases/$(database)/documents/users/$(uid);
+    }
+
+    function validCode(code) {
+      return code is string && code.matches('^[A-HJKMNP-Z2-9]{8}$');
+    }
+
+    function count(d, app) {
+      return d.counts.get(app, 0);
+    }
+
+    function validCount(n) {
+      return n is int && n >= 0 && n <= 5000;
+    }
+
+    function validProfile(d) {
+      return d.keys().hasAll(['nickname', 'friendCode', 'avatar', 'day', 'counts', 'total', 'updatedAt'])
+        && d.keys().hasOnly(['nickname', 'friendCode', 'avatar', 'day', 'counts', 'total', 'updatedAt'])
+        && d.nickname is string
+        && d.nickname.matches('^[\\p{L}\\p{M}0-9 _.-]{3,20}$')
+        && validCode(d.friendCode)
+        && d.avatar in ['boy', 'girl']
+        && d.day is string
+        && d.day.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')
+        && d.counts is map
+        && d.counts.keys().hasOnly(['FACEBOOK', 'INSTAGRAM', 'TIKTOK', 'YOUTUBE'])
+        && validCount(count(d, 'FACEBOOK'))
+        && validCount(count(d, 'INSTAGRAM'))
+        && validCount(count(d, 'TIKTOK'))
+        && validCount(count(d, 'YOUTUBE'))
+        && d.total == count(d, 'FACEBOOK') + count(d, 'INSTAGRAM') + count(d, 'TIKTOK') + count(d, 'YOUTUBE')
+        && d.updatedAt == request.time;
+    }
+
+    function countsNotDecreased(next, prev) {
+      return count(next, 'FACEBOOK') >= count(prev, 'FACEBOOK')
+        && count(next, 'INSTAGRAM') >= count(prev, 'INSTAGRAM')
+        && count(next, 'TIKTOK') >= count(prev, 'TIKTOK')
+        && count(next, 'YOUTUBE') >= count(prev, 'YOUTUBE');
+    }
+
+    match /users/{uid} {
+      allow get: if isUser(uid)
+        || (signedIn() && exists(/databases/$(database)/documents/users/$(uid)/friends/$(request.auth.uid)));
+      allow list: if false;
+
+      // Created together with the friendCodes doc in one batch.
+      allow create: if isUser(uid)
+        && validProfile(request.resource.data)
+        && getAfter(/databases/$(database)/documents/friendCodes/$(request.resource.data.friendCode)).data.uid == uid;
+
+      allow update: if isUser(uid)
+        && validProfile(request.resource.data)
+        && request.resource.data.friendCode == resource.data.friendCode
+        && request.time > resource.data.updatedAt + duration.value(10, 's')
+        && (request.resource.data.day != resource.data.day
+            || countsNotDecreased(request.resource.data, resource.data));
+
+      allow delete: if isUser(uid);
+
+      match /friends/{friendUid} {
+        allow get, list: if isUser(uid);
+
+        // Both sides store the code of the person being added ({friendUid} when you add to your
+        // own list, {uid} when you add yourself to theirs), proving you know their friend code.
+        allow create: if signedIn()
+          && uid != friendUid
+          && request.resource.data.keys().hasOnly(['code', 'addedAt'])
+          && request.resource.data.addedAt == request.time
+          && (
+            (isUser(uid) && request.resource.data.code == get(userDoc(friendUid)).data.friendCode)
+            || (isUser(friendUid) && request.resource.data.code == get(userDoc(uid)).data.friendCode)
+          );
+
+        allow update: if false;
+        allow delete: if isUser(uid) || isUser(friendUid);
+      }
+    }
+
+    match /friendCodes/{code} {
+      allow get: if signedIn();
+      allow list: if false;
+      allow create: if signedIn()
+        && validCode(code)
+        && request.resource.data.keys().hasOnly(['uid'])
+        && request.resource.data.uid == request.auth.uid;
+      allow update: if false;
+      allow delete: if signedIn() && resource.data.uid == request.auth.uid;
+    }
+
+    // Everything else is locked.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- No INTERNET permission: the reel counter works fully offline and sends nothing anywhere. -->
+<!-- The reel counter works fully offline. INTERNET is used only by the optional Scroll Battles. -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <uses-permission android:name="android.permission.INTERNET" />
 
     <application
         android:allowBackup="false"
@@ -28,6 +30,11 @@
         <activity
             android:name=".ReportsActivity"
             android:exported="false" />
+
+        <activity
+            android:name=".FriendsActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
 
         <!-- Only the Android system (which holds BIND_ACCESSIBILITY_SERVICE) can bind to this. -->
         <service

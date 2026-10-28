@@ -84,6 +84,15 @@ class CountStore(context: Context) {
 
     val isFemale: Boolean get() = gender == GENDER_FEMALE
 
+    /** Scroll Battles: own friend code and public nickname; null until the user joins. */
+    var friendCode: String?
+        get() = prefs.getString(KEY_FRIEND_CODE, null)
+        set(value) = prefs.edit().putString(KEY_FRIEND_CODE, value).apply()
+
+    var nickname: String?
+        get() = prefs.getString(KEY_NICKNAME, null)
+        set(value) = prefs.edit().putString(KEY_NICKNAME, value).apply()
+
     /** Highest nudge milestone already shown today, so each one pops up only once. */
     var lastNudgeMilestone: Int
         get() {
@@ -131,6 +140,8 @@ class CountStore(context: Context) {
         private const val KEY_NAME = "user_name"
         private const val KEY_GENDER = "character"
         private const val KEY_OVERLAY_Y = "overlay_y"
+        private const val KEY_FRIEND_CODE = "friend_code"
+        private const val KEY_NICKNAME = "nickname"
         private const val KEY_LAST_MILESTONE = "last_nudge_milestone"
         private const val KEY_LAST_NIGHT_NUDGE = "last_night_nudge_at"
         private const val HISTORY_PREFIX = "h_"
