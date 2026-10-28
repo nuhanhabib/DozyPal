@@ -1,0 +1,84 @@
+name: Build APK
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  pull_request:
+  workflow_dispatch:
+
+# Least privilege by default; only the release job may write.
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.9'
+
+      - name: Prepare signing key
+        env:
+          KEYSTORE_B64: ${{ secrets.DOZYPAL_KEYSTORE_B64 }}
+        run: |
+          if [ -n "$KEYSTORE_B64" ]; then
+            echo "$KEYSTORE_B64" | base64 -d > "$RUNNER_TEMP/dozypal.p12"
+            echo "DOZYPAL_KEYSTORE_PATH=$RUNNER_TEMP/dozypal.p12" >> "$GITHUB_ENV"
+          else
+            echo "No signing key available (for example a pull request from a fork). Building an unsigned APK."
+          fi
+
+      - name: Build release APK
+        env:
+          DOZYPAL_KEYSTORE_PASSWORD: ${{ secrets.DOZYPAL_KEYSTORE_PASSWORD }}
+          DOZYPAL_KEY_ALIAS: ${{ secrets.DOZYPAL_KEY_ALIAS }}
+          DOZYPAL_KEY_PASSWORD: ${{ secrets.DOZYPAL_KEYSTORE_PASSWORD }}
+          VERSION_CODE: ${{ github.run_number }}
+          VERSION_NAME: ${{ startsWith(github.ref, 'refs/tags/v') && github.ref_name || format('0.1.{0}', github.run_number) }}
+        run: gradle :app:assembleRelease --no-daemon
+
+      - name: Collect APK
+        if: always()
+        run: |
+          rm -f "$RUNNER_TEMP/dozypal.p12"
+          mkdir -p dist
+          cp app/build/outputs/apk/release/*.apk dist/
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: DozyPal-apk
+          path: dist/*.apk
+          if-no-files-found: error
+
+  release:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: DozyPal-apk
+          path: dist
+
+      - name: Publish GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          test -f dist/app-release.apk || { echo "APK is not signed; refusing to publish."; exit 1; }
+          mv dist/app-release.apk "dist/DozyPal-$TAG.apk"
+          gh release create "$TAG" "dist/DozyPal-$TAG.apk" \
+            --repo "$GITHUB_REPOSITORY" \
+            --title "DozyPal $TAG" \
+            --generate-notes

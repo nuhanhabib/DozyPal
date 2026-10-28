@@ -1,0 +1,203 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/app_name"
+            android:textColor="@color/purple"
+            android:textSize="28sp"
+            android:textStyle="bold" />
+
+        <TextView
+            style="@style/CardBody"
+            android:text="@string/tagline" />
+
+        <!-- Shown until the accessibility service is switched on. -->
+        <LinearLayout
+            android:id="@+id/setup_card"
+            style="@style/Card"
+            android:background="@drawable/card_warning">
+
+            <TextView style="@style/CardTitle" android:text="@string/setup_title" />
+            <TextView style="@style/CardBody" android:text="@string/setup_body" />
+            <Button
+                android:id="@+id/setup_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="@string/setup_button" />
+
+            <LinearLayout
+                android:id="@+id/restricted_group"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+                <TextView
+                    style="@style/CardBody"
+                    android:layout_marginTop="8dp"
+                    android:text="@string/restricted_body" />
+                <Button
+                    android:id="@+id/restricted_button"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/restricted_button" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <LinearLayout style="@style/Card" android:gravity="center_horizontal">
+            <io.github.nuhanhabib.dozypal.CharacterView
+                android:id="@+id/character"
+                android:layout_width="220dp"
+                android:layout_height="220dp" />
+
+            <TextView
+                android:id="@+id/mood_title"
+                style="@style/CardTitle"
+                android:textSize="20sp" />
+            <TextView
+                android:id="@+id/mood_line"
+                style="@style/CardBody"
+                android:gravity="center" />
+
+            <TextView
+                android:id="@+id/total_count"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:textColor="@color/text"
+                android:textSize="48sp"
+                android:textStyle="bold" />
+            <TextView
+                style="@style/CardBody"
+                android:layout_width="wrap_content"
+                android:text="@string/reels_today" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:orientation="horizontal">
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:orientation="vertical">
+                    <TextView
+                        android:id="@+id/facebook_count"
+                        style="@style/CardTitle"
+                        android:textSize="22sp" />
+                    <TextView
+                        style="@style/CardBody"
+                        android:layout_width="wrap_content"
+                        android:text="@string/facebook" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:orientation="vertical">
+                    <TextView
+                        android:id="@+id/instagram_count"
+                        style="@style/CardTitle"
+                        android:textSize="22sp" />
+                    <TextView
+                        style="@style/CardBody"
+                        android:layout_width="wrap_content"
+                        android:text="@string/instagram" />
+                </LinearLayout>
+            </LinearLayout>
+        </LinearLayout>
+
+        <LinearLayout style="@style/Card">
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+                    <TextView style="@style/CardTitle" android:text="@string/counter_title" />
+                    <TextView style="@style/CardBody" android:text="@string/counter_body" />
+                </LinearLayout>
+                <Switch
+                    android:id="@+id/counter_switch"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:contentDescription="@string/counter_title" />
+            </LinearLayout>
+
+            <TextView
+                style="@style/CardTitle"
+                android:layout_marginTop="16dp"
+                android:text="@string/position_title" />
+            <RadioGroup
+                android:id="@+id/side_group"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+                <RadioButton
+                    android:id="@+id/side_left"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/left" />
+                <RadioButton
+                    android:id="@+id/side_right"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
+                    android:text="@string/right" />
+            </RadioGroup>
+
+            <TextView
+                style="@style/CardTitle"
+                android:layout_marginTop="16dp"
+                android:text="@string/character_title" />
+            <RadioGroup
+                android:id="@+id/character_group"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+                <RadioButton
+                    android:id="@+id/character_boy"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/boy" />
+                <RadioButton
+                    android:id="@+id/character_girl"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
+                    android:text="@string/girl" />
+            </RadioGroup>
+        </LinearLayout>
+
+        <LinearLayout style="@style/Card">
+            <TextView style="@style/CardTitle" android:text="@string/friends_title" />
+            <TextView style="@style/CardBody" android:text="@string/friends_body" />
+        </LinearLayout>
+
+        <LinearLayout
+            style="@style/Card"
+            android:layout_marginBottom="16dp">
+            <TextView style="@style/CardTitle" android:text="@string/privacy_title" />
+            <TextView style="@style/CardBody" android:text="@string/privacy_body" />
+        </LinearLayout>
+    </LinearLayout>
+</ScrollView>
