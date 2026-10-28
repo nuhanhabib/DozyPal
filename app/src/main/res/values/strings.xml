@@ -74,11 +74,10 @@
     <string name="nickname_label">Nickname</string>
     <string name="nickname_hint">3–20 letters or numbers</string>
     <string name="nickname_error">Nickname must be 3–20 characters: letters, numbers, spaces, _ . or -</string>
-    <string name="join_google">Continue with Google</string>
-    <string name="join_anonymous">Just use a nickname</string>
-    <string name="join_privacy">Only your nickname and today\'s reel counts are shared, and only with friends you add. With "Just use a nickname" no email is used, but your battles are lost if you uninstall. You can leave and delete everything at any time.</string>
+    <string name="join_button">Join</string>
+    <string name="join_privacy">No email or account needed. Only your nickname and today\'s reel counts are shared, and only with friends you add. If you uninstall the app or clear its data, you get a new code and need to add your friends again. You can leave and delete everything at any time.</string>
     <string name="join_failed">Couldn\'t join. Check your internet connection and try again.</string>
-    <string name="join_google_error">Google sign-in isn\'t set up in this build. Use "Just use a nickname" instead.</string>
+    <string name="code_changed">Friend codes are now shorter! Join again to get your new 5-character code, then share it with your friends.</string>
 
     <string name="board_title">Leaderboard</string>
     <string name="board_battle">⚔️ Battle</string>
@@ -91,11 +90,11 @@
     <string name="refresh">Refresh</string>
 
     <string name="add_friend_title">Add a friend</string>
-    <string name="friend_code_hint">Friend code, e.g. ABCD 2345</string>
+    <string name="friend_code_hint">Friend code, e.g. K7M2Q</string>
     <string name="add_friend">Add friend</string>
     <string name="adding_friend">Adding…</string>
     <string name="friend_added">Friend added! 🎉</string>
-    <string name="friend_bad_code">That code doesn\'t look right. Codes have 8 letters and numbers.</string>
+    <string name="friend_bad_code">That code doesn\'t look right. Codes have 5 letters and numbers.</string>
     <string name="friend_own_code">That\'s your own code 😄</string>
     <string name="friend_not_found">No one has that code. Check it and try again.</string>
     <string name="friend_already">You\'re already friends.</string>
@@ -104,8 +103,6 @@
     <string name="my_code_title">Your friend code</string>
     <string name="tap_to_copy">Tap the code to copy it</string>
     <string name="code_copied">Code copied</string>
-    <string name="qr_description">QR code with your friend code</string>
-    <string name="qr_content">DozyPal friend code: %1$s</string>
     <string name="share_code">Share my code</string>
     <string name="share_text">Let\'s have a Scroll Battle on DozyPal 😴 Add me with my code: %1$s\nGet the app: https://github.com/nuhanhabib/DozyPal/releases/latest</string>
 

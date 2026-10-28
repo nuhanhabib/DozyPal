@@ -7,26 +7,15 @@ import android.content.ClipboardManager
 import android.content.Intent
 import android.graphics.Typeface
 import android.os.Bundle
-import android.os.CancellationSignal
 import android.view.Gravity
 import android.view.View
 import android.widget.EditText
-import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
-import androidx.credentials.CredentialManager
-import androidx.credentials.CredentialManagerCallback
-import androidx.credentials.CustomCredential
-import androidx.credentials.GetCredentialRequest
-import androidx.credentials.GetCredentialResponse
-import androidx.credentials.exceptions.GetCredentialException
-import com.google.android.libraries.identity.googleid.GetSignInWithGoogleOption
-import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
-import java.util.concurrent.Executor
 
-/** Join Scroll Battles, share your friend code / QR, add friends, and see the leaderboards. */
+/** Join Scroll Battles, share your friend code, add friends, and see the leaderboards. */
 class FriendsActivity : Activity() {
 
     private enum class Board(val app: ReelApp?) {
@@ -42,7 +31,6 @@ class FriendsActivity : Activity() {
     private lateinit var joinError: TextView
     private lateinit var busy: ProgressBar
     private lateinit var codeText: TextView
-    private lateinit var qrImage: ImageView
     private lateinit var friendCodeInput: EditText
     private lateinit var addStatus: TextView
     private lateinit var boardSubtitle: TextView
@@ -50,8 +38,6 @@ class FriendsActivity : Activity() {
     private lateinit var boardTabs: Map<Board, TextView>
     private var board = Board.BATTLE
     private var players: List<Player> = emptyList()
-    private var qrForCode: String? = null
-    private val uiExecutor = Executor { runOnUiThread(it) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -65,7 +51,6 @@ class FriendsActivity : Activity() {
         joinError = findViewById(R.id.join_error)
         busy = findViewById(R.id.join_busy)
         codeText = findViewById(R.id.my_code)
-        qrImage = findViewById(R.id.my_qr)
         friendCodeInput = findViewById(R.id.friend_code_input)
         addStatus = findViewById(R.id.add_status)
         boardSubtitle = findViewById(R.id.board_subtitle)
@@ -80,8 +65,7 @@ class FriendsActivity : Activity() {
         boardTabs.forEach { (b, view) -> view.setOnClickListener { board = b; renderBoard() } }
 
         findViewById<View>(R.id.friends_back).setOnClickListener { finish() }
-        findViewById<View>(R.id.join_google).setOnClickListener { joinWithGoogle() }
-        findViewById<View>(R.id.join_anonymous).setOnClickListener { joinAnonymously() }
+        findViewById<View>(R.id.join_button).setOnClickListener { join() }
         findViewById<View>(R.id.share_code).setOnClickListener { shareCode() }
         findViewById<View>(R.id.add_friend).setOnClickListener { addFriend() }
         findViewById<View>(R.id.refresh_board).setOnClickListener { loadBoard() }
@@ -97,6 +81,9 @@ class FriendsActivity : Activity() {
     }
 
     private fun refresh() {
+        if (Social.isAvailable(this) && Social.isJoined(this, store) && Social.hasOldCode(store)) {
+            return migrateOldCode()
+        }
         val available = Social.isAvailable(this)
         val joined = available && Social.isJoined(this, store)
         unavailable.visibility = if (available) View.GONE else View.VISIBLE
@@ -105,56 +92,34 @@ class FriendsActivity : Activity() {
         if (!joined) return
 
         val code = store.friendCode ?: return
-        codeText.text = Social.formatCode(code)
-        if (qrForCode != code) {
-            val size = (200 * resources.displayMetrics.density).toInt()
-            qrImage.setImageBitmap(QrCode.bitmap(getString(R.string.qr_content, code), size, getColor(R.color.text)))
-            qrForCode = code
-        }
+        codeText.text = code
         Social.requestSync(store)
         loadBoard()
     }
 
+    /** Accounts from older versions had 8-character codes: clear them so the user can rejoin with a short one. */
+    private fun migrateOldCode() {
+        Social.leave(store) { ok ->
+            if (ok) {
+                showJoinError(getString(R.string.code_changed))
+                refresh()
+            } else {
+                Toast.makeText(this, R.string.friend_network_error, Toast.LENGTH_SHORT).show()
+                unavailable.visibility = View.GONE
+                joinSection.visibility = View.GONE
+                joinedSection.visibility = View.GONE
+            }
+        }
+    }
+
     // --- Joining ---
 
-    private fun joinAnonymously() {
+    private fun join() {
         val nickname = validNicknameOrShowError() ?: return
         setBusy(true)
         Social.signInAnonymously { error ->
             if (error != null) finishJoin(error) else Social.join(store, nickname, ::finishJoin)
         }
-    }
-
-    private fun joinWithGoogle() {
-        val nickname = validNicknameOrShowError() ?: return
-        // Generated by the google-services plugin from google-services.json.
-        val clientIdRes = resources.getIdentifier("default_web_client_id", "string", packageName)
-        if (clientIdRes == 0) return showJoinError(getString(R.string.join_google_error))
-
-        val request = GetCredentialRequest.Builder()
-            .addCredentialOption(GetSignInWithGoogleOption.Builder(getString(clientIdRes)).build())
-            .build()
-        setBusy(true)
-        CredentialManager.create(this).getCredentialAsync(
-            this, request, CancellationSignal(), uiExecutor,
-            object : CredentialManagerCallback<GetCredentialResponse, GetCredentialException> {
-                override fun onResult(result: GetCredentialResponse) {
-                    val credential = result.credential
-                    if (credential is CustomCredential &&
-                        credential.type == GoogleIdTokenCredential.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL
-                    ) {
-                        val token = GoogleIdTokenCredential.createFrom(credential.data).idToken
-                        Social.signInWithGoogle(token) { error ->
-                            if (error != null) finishJoin(error) else Social.join(store, nickname, ::finishJoin)
-                        }
-                    } else {
-                        finishJoin(IllegalStateException("Unexpected credential"))
-                    }
-                }
-
-                override fun onError(e: GetCredentialException) = finishJoin(e)
-            },
-        )
     }
 
     private fun finishJoin(error: Exception?) {
@@ -175,15 +140,14 @@ class FriendsActivity : Activity() {
 
     private fun setBusy(on: Boolean) {
         busy.visibility = if (on) View.VISIBLE else View.GONE
-        findViewById<View>(R.id.join_google).isEnabled = !on
-        findViewById<View>(R.id.join_anonymous).isEnabled = !on
+        findViewById<View>(R.id.join_button).isEnabled = !on
     }
 
     // --- Friend code ---
 
     private fun shareCode() {
         val code = store.friendCode ?: return
-        val text = getString(R.string.share_text, Social.formatCode(code))
+        val text = getString(R.string.share_text, code)
         startActivity(Intent.createChooser(
             Intent(Intent.ACTION_SEND).setType("text/plain").putExtra(Intent.EXTRA_TEXT, text),
             getString(R.string.share_code),

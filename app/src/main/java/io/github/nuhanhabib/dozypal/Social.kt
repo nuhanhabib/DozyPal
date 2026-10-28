@@ -7,7 +7,6 @@ import android.os.SystemClock
 import com.google.android.gms.tasks.Tasks
 import com.google.firebase.FirebaseApp
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
@@ -24,14 +23,14 @@ data class Player(
 }
 
 /**
- * Optional Scroll Battles: sign-in, the user's public profile (nickname + today's counts),
+ * Optional Scroll Battles: anonymous sign-in, the user's public profile (nickname + today's counts),
  * friends added by code, and the leaderboard. Everything is protected by firestore.rules.
  * Nothing here runs unless the user joins.
  */
 object Social {
 
     private const val CODE_ALPHABET = "ABCDEFGHJKMNPQRSTUVWXYZ23456789"
-    private const val CODE_LENGTH = 8
+    private const val CODE_LENGTH = 5
     // The rules allow one save per 10 s; stay well above that.
     private const val SYNC_INTERVAL_MS = 30_000L
     private val NICKNAME_PATTERN = Regex("^[\\p{L}\\p{M}0-9 _.-]{3,20}$")
@@ -51,7 +50,6 @@ object Social {
     fun isAvailable(context: Context): Boolean = FirebaseApp.getApps(context).isNotEmpty()
 
     val uid: String? get() = auth.currentUser?.uid
-    val isAnonymous: Boolean get() = auth.currentUser?.isAnonymous ?: true
 
     fun isJoined(context: Context, store: CountStore): Boolean =
         isAvailable(context) && uid != null && store.friendCode != null
@@ -61,23 +59,18 @@ object Social {
         return name.takeIf { NICKNAME_PATTERN.matches(it) }
     }
 
-    /** Accepts "abcd 2345", "ABCD-2345" etc. Returns null if it can't be a valid code. */
+    /** Accepts "k7m2q", "K7M-2Q" etc. Returns null if it can't be a valid code. */
     fun normalizeCode(raw: String): String? {
         val code = raw.uppercase().filter { it.isLetterOrDigit() }
         return code.takeIf { it.length == CODE_LENGTH && it.all { c -> c in CODE_ALPHABET } }
     }
 
-    fun formatCode(code: String) = "${code.take(4)} ${code.drop(4)}"
+    /** Codes from older versions were 8 characters; those accounts have to rejoin to get a short code. */
+    fun hasOldCode(store: CountStore): Boolean = store.friendCode?.let { normalizeCode(it) == null } ?: false
 
     fun signInAnonymously(onDone: (Exception?) -> Unit) {
         if (uid != null) return onDone(null)
         auth.signInAnonymously()
-            .addOnSuccessListener { onDone(null) }
-            .addOnFailureListener { onDone(it) }
-    }
-
-    fun signInWithGoogle(idToken: String, onDone: (Exception?) -> Unit) {
-        auth.signInWithCredential(GoogleAuthProvider.getCredential(idToken, null))
             .addOnSuccessListener { onDone(null) }
             .addOnFailureListener { onDone(it) }
     }
@@ -88,12 +81,18 @@ object Social {
         users().document(me).get()
             .addOnSuccessListener { existing ->
                 val existingCode = existing.getString("friendCode")
-                if (existing.exists() && existingCode != null) {
+                if (existing.exists() && existingCode != null && normalizeCode(existingCode) != null) {
                     store.friendCode = existingCode
                     store.nickname = nickname
                     lastSyncAt = 0L
                     requestSync(store)
                     onDone(null)
+                } else if (existing.exists()) {
+                    // An old-format profile: remove it first, then start fresh with a short code.
+                    wipe(me, existingCode) { ok ->
+                        if (ok) createProfile(store, me, nickname, attempt = 0, onDone)
+                        else onDone(IllegalStateException("Couldn't remove old profile"))
+                    }
                 } else {
                     createProfile(store, me, nickname, attempt = 0, onDone)
                 }
@@ -194,7 +193,19 @@ object Social {
     /** Deletes the profile, friend code and all friendships, then signs out. */
     fun leave(store: CountStore, onDone: (Boolean) -> Unit) {
         val me = uid ?: return onDone(false)
-        val code = store.friendCode
+        wipe(me, store.friendCode) { ok ->
+            if (ok) {
+                store.friendCode = null
+                store.nickname = null
+                val user = auth.currentUser
+                if (user != null && user.isAnonymous) user.delete()
+                auth.signOut()
+            }
+            onDone(ok)
+        }
+    }
+
+    private fun wipe(me: String, code: String?, onDone: (Boolean) -> Unit) {
         friendsOf(me).get()
             .addOnSuccessListener { friends ->
                 val batch = db.batch()
@@ -204,16 +215,7 @@ object Social {
                 }
                 if (code != null) batch.delete(codes().document(code))
                 batch.delete(users().document(me))
-                batch.commit()
-                    .addOnSuccessListener {
-                        store.friendCode = null
-                        store.nickname = null
-                        val user = auth.currentUser
-                        if (user != null && user.isAnonymous) user.delete()
-                        auth.signOut()
-                        onDone(true)
-                    }
-                    .addOnFailureListener { onDone(false) }
+                batch.commit().addOnCompleteListener { onDone(it.isSuccessful) }
             }
             .addOnFailureListener { onDone(false) }
     }

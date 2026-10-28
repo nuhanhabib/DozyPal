@@ -15,7 +15,7 @@ No ads, no paid version, no account needed (an account is only used for the opti
 - 😪 **Sleepy character:** The more reels you watch, the droopier they get. Resets every day.
 - 📊 **Reports:** daily, weekly and monthly charts, busiest and calmest days, and a breakdown by app.
 - 🚫 **Ads aren't counted:** sponsored reels are skipped.
-- 👫 **Scroll Battles (optional):** sign in with Google or just a nickname, add friends with an 8-character code or QR, and compete on leaderboards (Battle, Facebook, Instagram, TikTok, Shorts) for who scrolled the least today.
+- 👫 **Scroll Battles (optional):** pick a nickname (no account or email needed), add friends with a 5-character code, and compete on leaderboards (Battle, Facebook, Instagram, TikTok, Shorts) for who scrolled the least today.
 - 🔒 **Private:** counting works offline. Only if you join Scroll Battles are your nickname and today's counts shared, and only with friends you add.
 
 ## Install (Android 8.0+)

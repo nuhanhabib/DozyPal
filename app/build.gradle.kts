@@ -62,13 +62,9 @@ android {
     }
 }
 
-// Kept to the minimum: Firebase (sign-in + database for Scroll Battles), Google sign-in, and a QR encoder.
+// Kept to the minimum: Firebase (anonymous sign-in + database for Scroll Battles).
 dependencies {
     implementation(platform("com.google.firebase:firebase-bom:33.5.1"))
     implementation("com.google.firebase:firebase-auth")
     implementation("com.google.firebase:firebase-firestore")
-    implementation("androidx.credentials:credentials:1.3.0")
-    implementation("androidx.credentials:credentials-play-services-auth:1.3.0")
-    implementation("com.google.android.libraries.identity.googleid:googleid:1.1.1")
-    implementation("com.google.zxing:core:3.5.3")
 }

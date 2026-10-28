@@ -11,10 +11,10 @@ DozyPal is a free, open-source app made for fun. It is built to know as little a
 
 Nothing is uploaded unless you open Scroll Battles and join. If you do:
 
-- **Sign-in:** either Google sign-in or an anonymous account, handled by Google Firebase Authentication. With Google sign-in, Firebase knows your Google account; DozyPal does not show it to anyone.
+- **Sign-in:** an anonymous account handled by Google Firebase Authentication. No email, phone number or Google account is used.
 - **What is stored** in Google Cloud Firestore (asia-south1, Mumbai): the nickname you choose, your avatar (male/female), your friend code, today's date, today's reel counts per app, and your friends list.
 - **Who can see it:** only you and the friends you add (or who add you with your code). Nobody can browse or search all users.
-- **Deleting:** tap **Leave Scroll Battles** to delete your profile, friend code and friendships from the server. Anonymous accounts are deleted too.
+- **Deleting:** tap **Leave Scroll Battles** to delete your profile, friend code and friendships from the server, and the anonymous account is deleted too.
 
 ## What DozyPal does NOT do
 
