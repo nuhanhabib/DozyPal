@@ -12,6 +12,7 @@ rules_version = '2';
 //   - Only you can write your own profile; nobody can list all users.
 //   - Your profile is readable only by you and by people in your friends list.
 //   - Someone can become your friend only if they know your friend code.
+//   - Friend codes can only be created together with your own profile (no code spamming).
 //   - Profiles are validated (fields, nickname, count limits, total = sum of counts).
 //   - Counts can't go down during the same day, and you can save at most once every 10 seconds.
 service cloud.firestore {
@@ -94,6 +95,7 @@ service cloud.firestore {
         allow create: if signedIn()
           && uid != friendUid
           && request.resource.data.keys().hasOnly(['code', 'addedAt'])
+          && validCode(request.resource.data.code)
           && request.resource.data.addedAt == request.time
           && (
             (isUser(uid) && request.resource.data.code == get(userDoc(friendUid)).data.friendCode)
@@ -108,10 +110,13 @@ service cloud.firestore {
     match /friendCodes/{code} {
       allow get: if signedIn();
       allow list: if false;
+      // A code can only be created in the same batch as the owner's profile that uses it,
+      // so nobody can mass-create codes (an existing profile can't change its code).
       allow create: if signedIn()
         && validCode(code)
         && request.resource.data.keys().hasOnly(['uid'])
-        && request.resource.data.uid == request.auth.uid;
+        && request.resource.data.uid == request.auth.uid
+        && getAfter(userDoc(request.auth.uid)).data.friendCode == code;
       allow update: if false;
       allow delete: if signedIn() && resource.data.uid == request.auth.uid;
     }
