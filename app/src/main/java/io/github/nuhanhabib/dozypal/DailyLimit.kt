@@ -15,7 +15,7 @@ object DailyLimit {
     const val MAX = 1000
     const val STEP = 10
     const val DEFAULT = 200
-    val PRESETS = intArrayOf(50, 100, 200, 300)
+    val PRESETS = intArrayOf(100, 200, 300, 400, 500)
 
     private const val WARN_AT = 0.8f
     private const val REMIND_EVERY = 25
