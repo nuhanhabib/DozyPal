@@ -13,7 +13,7 @@ No ads, no paid version, no account needed (an account is only used for the opti
 - 🔘 **On/off switch:** turn counting off whenever you want.
 - 👋 **Personal:** tell DozyPal your name and pick a male or female avatar. Little bubbles pop up at milestones and late at night ("Hey Nuhan, put the phone down for a bit 😴").
 - 😪 **Sleepy character:** a different face for each of 9 moods, from 😃 wide awake to 🧟 zombie mode. Resets every day.
-- ⏰ **Daily reel limit (optional):** pick how many reels is enough for today. You get a quiet heads-up at 80%, a red reminder with a short sound and buzz at your limit, and another every 25 reels after that. The counter turns red once you're over, and Reports show your under-limit days and streak.
+- ⏰ **Daily reel limit (optional):** pick how many reels is enough for today. You get a quiet heads-up at 80%, a red reminder with a short sound and buzz at your limit, and another every 25 reels after that. The counter turns red once you're over, and Reports show how many days you stayed under it.
 - 📊 **Reports:** daily, weekly and monthly charts, busiest and calmest days, and a breakdown by app.
 - 🚫 **Ads aren't counted:** sponsored reels are skipped.
 - 👫 **Scroll Battles (optional):** pick a nickname (no account or email needed), add friends with a 5-character code, and compete on leaderboards (Battle, Facebook, Instagram, TikTok, Shorts) for who scrolled the least today.

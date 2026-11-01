@@ -32,9 +32,6 @@
     <string name="report_by_app">By app</string>
     <string name="report_limit_day">Daily limit: %1$d of %2$d used</string>
     <string name="report_limit_range">Under your limit of %1$d: %2$d of %3$d days</string>
-    <string name="report_streak">🔥 Streak: %1$d days in a row under your limit</string>
-    <string name="report_streak_one">🔥 Streak: 1 day under your limit</string>
-    <string name="report_streak_none">No streak yet. Stay under your limit today to start one!</string>
 
     <string name="setup_title">One step left: turn on DozyPal</string>
     <string name="setup_body">DozyPal needs Accessibility access to notice when you swipe to a new reel. Open Accessibility settings, tap DozyPal (it may be under \"Downloaded apps\") and switch it on.</string>
