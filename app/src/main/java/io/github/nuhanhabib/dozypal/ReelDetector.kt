@@ -15,8 +15,9 @@ enum class ReelChange { NONE, FORWARD, BACKWARD }
  * None of these apps offer an official way to know this, so these are heuristics.
  * When an app changes its layout, this file is the one to update. The rules:
  *  1. The scrolled view must look like a reels pager: almost full screen, showing 1-2 items at a time
- *     (normal feeds show many posts at once, so they don't match). Instagram's and YouTube's pagers
- *     are also recognised by their view ids.
+ *     (normal feeds show many posts at once, so they don't match). TikTok keeps the previous and next
+ *     video loaded too, so up to 3 there. Instagram's and YouTube's pagers are also recognised by their
+ *     view ids. Sideways scrolls (such as TikTok's For You / Following tabs) are ignored.
  *  2. The screen must mention "Reels" (Facebook/Instagram) or "Shorts" (YouTube), so stories and
  *     normal long videos are skipped. TikTok needs no label.
  *  3. Forward and backward moves are reported separately; only forward ones can be counted.
@@ -28,8 +29,8 @@ class ReelDetector(
     private val screenSize: () -> Pair<Int, Int>,
     private val rootProvider: () -> AccessibilityNodeInfo?,
 ) {
-    private var lastSourceKey: String? = null
-    private var lastIndex = -1
+    // Per pager, so two pagers on one screen (TikTok's tabs pager around its feed) don't reset each other.
+    private val lastIndexBySource = HashMap<String, Int>()
     private var lastSwipeAt = 0L
     private var reelsScreenApp: ReelApp? = null
     private var reelsScreenCheckedAt = 0L
@@ -37,33 +38,30 @@ class ReelDetector(
 
     fun onScroll(event: AccessibilityEvent, app: ReelApp): ReelChange {
         if (event.eventType != AccessibilityEvent.TYPE_VIEW_SCROLLED) return ReelChange.NONE
+        if (isSideways(event)) return ReelChange.NONE
         val source = event.source ?: return ReelChange.NONE
         if (!looksLikeReelPager(source, app)) return ReelChange.NONE
 
         val now = SystemClock.uptimeMillis()
         val sourceKey = "${app.name}:${source.viewIdResourceName ?: source.className}"
         val index = event.fromIndex
+        val lastIndex = lastIndexBySource.put(sourceKey, index)
 
         // First scroll seen on this pager: remember where we are.
-        if (sourceKey != lastSourceKey) {
-            lastSourceKey = sourceKey
-            lastIndex = index
+        if (lastIndex == null) {
             lastSwipeAt = now
             return ReelChange.NONE
         }
 
         if (index >= 0 && lastIndex >= 0) {
-            val change = when {
+            return when {
                 index > lastIndex -> ReelChange.FORWARD
                 index < lastIndex -> ReelChange.BACKWARD
                 else -> ReelChange.NONE
             }
-            lastIndex = index
-            return change
         }
 
         // The app doesn't report item positions: treat each swipe gesture as one move.
-        lastIndex = index
         if (now - lastSwipeAt < SWIPE_GAP_MS) return ReelChange.NONE
         lastSwipeAt = now
         val scrolledUp = Build.VERSION.SDK_INT >= Build.VERSION_CODES.P && event.scrollDeltaY < 0
@@ -79,10 +77,19 @@ class ReelDetector(
 
         val (screenWidth, screenHeight) = screenSize()
         val bounds = Rect().also { source.getBoundsInScreen(it) }
-        val fullScreen = bounds.height() >= screenHeight * 0.7f && bounds.width() >= screenWidth * 0.9f
-        val pagerLike = source.childCount in 1..2
+        val fullScreen = bounds.height() >= screenHeight * 0.6f && bounds.width() >= screenWidth * 0.9f
         // TikTok's whole home feed is short videos, so no "Reels"/"Shorts" label is needed there.
-        return fullScreen && pagerLike && (app == ReelApp.TIKTOK || isReelsScreen(app))
+        if (app == ReelApp.TIKTOK) return fullScreen && source.childCount in 1..3
+        return fullScreen && source.childCount in 1..2 && isReelsScreen(app)
+    }
+
+    /** A scroll that moved only left/right, e.g. switching TikTok's For You / Following tabs. */
+    private fun isSideways(event: AccessibilityEvent): Boolean {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.P) return false
+        // -1 means "not reported" for both deltas.
+        val movedX = event.scrollDeltaX != 0 && event.scrollDeltaX != -1
+        val movedY = event.scrollDeltaY != 0 && event.scrollDeltaY != -1
+        return movedX && !movedY
     }
 
     private fun isReelsScreen(app: ReelApp): Boolean {
