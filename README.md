@@ -58,4 +58,4 @@ Without the signing secrets this produces an unsigned APK, which is fine for tes
 
 ## License
 
-[MIT](LICENSE). DozyPal is not affiliated with Meta, Facebook or Instagram.
+Made by Nuhan Habib. [MIT](LICENSE). DozyPal is not affiliated with Meta, Facebook or Instagram.
