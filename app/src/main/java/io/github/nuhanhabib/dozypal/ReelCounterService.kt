@@ -52,7 +52,7 @@ class ReelCounterService : AccessibilityService() {
         if (!store.counterEnabled || currentApp != app || !isUserLooking() || detector.isSponsoredNow()) {
             return@Runnable
         }
-        overlay.update(store.increment(app))
+        overlay.update(store.increment(app), store.total())
         maybeShowNudge()
         if (Social.isJoined(this, store)) Social.requestSync(store)
     }
@@ -138,7 +138,7 @@ class ReelCounterService : AccessibilityService() {
         if (!store.counterEnabled) return
         currentApp = app
         awayChecks = 0
-        overlay.show(store.count(app), store.overlayOnLeft, store.overlayOpacity, store.overlayY)
+        overlay.show(store.count(app), store.total(), store.overlayOnLeft, store.overlayOpacity, store.overlayY)
         handler.removeCallbacks(foregroundCheck)
         handler.postDelayed(foregroundCheck, FOREGROUND_POLL_MS)
     }

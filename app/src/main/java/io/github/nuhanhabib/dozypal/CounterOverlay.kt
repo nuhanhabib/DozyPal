@@ -57,8 +57,8 @@ class CounterOverlay(
         enableDragging()
     }
 
-    fun show(count: Int, left: Boolean, opacityPercent: Int, savedY: Int) {
-        update(count)
+    fun show(count: Int, total: Int, left: Boolean, opacityPercent: Int, savedY: Int) {
+        update(count, total)
         tab.alpha = opacityPercent / 100f
         if (tabAttached && left == onLeft) return
         if (tabAttached) windowManager.removeView(tab)
@@ -71,8 +71,9 @@ class CounterOverlay(
         tabAttached = true
     }
 
-    fun update(count: Int) {
-        tab.text = "${Mood.forCount(count).emoji}\n$count"
+    /** Shows this app's [count]; the face matches today's [total] across all apps, like the home screen. */
+    fun update(count: Int, total: Int) {
+        tab.text = "${Mood.forCount(total).emoji}\n$count"
     }
 
     fun showBubble(text: String) {
