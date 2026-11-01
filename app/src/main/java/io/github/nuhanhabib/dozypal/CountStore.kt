@@ -101,6 +101,37 @@ class CountStore(context: Context) {
         }
         set(value) = prefs.edit().putInt(KEY_LAST_MILESTONE, value).apply()
 
+    /** Daily reel limit reminder: off by default, the limit is [DailyLimit.MIN]..[DailyLimit.MAX]. */
+    var limitEnabled: Boolean
+        get() = prefs.getBoolean(KEY_LIMIT_ENABLED, false)
+        set(value) = prefs.edit().putBoolean(KEY_LIMIT_ENABLED, value).putInt(KEY_LAST_LIMIT_ALERT, 0).apply()
+
+    var dailyLimit: Int
+        get() = prefs.getInt(KEY_LIMIT, DailyLimit.DEFAULT)
+        // A new limit gets its own reminders, even if older ones were already shown today.
+        set(value) = prefs.edit()
+            .putInt(KEY_LIMIT, value.coerceIn(DailyLimit.MIN, DailyLimit.MAX))
+            .putInt(KEY_LAST_LIMIT_ALERT, 0)
+            .apply()
+
+    var limitSound: Boolean
+        get() = prefs.getBoolean(KEY_LIMIT_SOUND, true)
+        set(value) = prefs.edit().putBoolean(KEY_LIMIT_SOUND, value).apply()
+
+    /** The limit reminder step (see [DailyLimit.stepFor]) already shown today. */
+    var lastLimitAlert: Int
+        get() {
+            rollOverIfNewDay()
+            return prefs.getInt(KEY_LAST_LIMIT_ALERT, 0)
+        }
+        set(value) = prefs.edit().putInt(KEY_LAST_LIMIT_ALERT, value).apply()
+
+    /** The earliest day with recorded history, or null if there is none yet. */
+    fun firstRecordedDay(): LocalDate? = prefs.all.keys
+        .filter { it.startsWith(HISTORY_PREFIX) }
+        .mapNotNull { runCatching { LocalDate.parse(it.removePrefix(HISTORY_PREFIX)) }.getOrNull() }
+        .minOrNull()
+
     var lastNightNudgeAt: Long
         get() = prefs.getLong(KEY_LAST_NIGHT_NUDGE, 0L)
         set(value) = prefs.edit().putLong(KEY_LAST_NIGHT_NUDGE, value).apply()
@@ -111,6 +142,7 @@ class CountStore(context: Context) {
         if (storedDay == today.toString()) return
 
         val editor = prefs.edit().putString(KEY_DAY, today.toString()).putInt(KEY_LAST_MILESTONE, 0)
+            .putInt(KEY_LAST_LIMIT_ALERT, 0)
         // Keep the finished day in history (installs from before v0.3 had no history yet).
         if (storedDay != null && !prefs.contains(HISTORY_PREFIX + storedDay)) {
             val finished = ReelApp.entries.associateWith { prefs.getInt(countKey(it), 0) }
@@ -144,6 +176,10 @@ class CountStore(context: Context) {
         private const val KEY_NICKNAME = "nickname"
         private const val KEY_LAST_MILESTONE = "last_nudge_milestone"
         private const val KEY_LAST_NIGHT_NUDGE = "last_night_nudge_at"
+        const val KEY_LIMIT_ENABLED = "limit_enabled"
+        const val KEY_LIMIT = "daily_limit"
+        private const val KEY_LIMIT_SOUND = "limit_sound"
+        private const val KEY_LAST_LIMIT_ALERT = "last_limit_alert"
         private const val HISTORY_PREFIX = "h_"
         private const val HISTORY_DAYS = 400L
 

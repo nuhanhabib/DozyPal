@@ -12,7 +12,8 @@ No ads, no paid version, no account needed (an account is only used for the opti
 - 🫧 **Floating counter:** a small tab docked to the left or right screen edge (drag it up or down) with adjustable opacity. It hides on the home and lock screen and ignores touches, so it never gets in the way.
 - 🔘 **On/off switch:** turn counting off whenever you want.
 - 👋 **Personal:** tell DozyPal your name and pick a male or female avatar. Little bubbles pop up at milestones and late at night ("Hey Nuhan, put the phone down for a bit 😴").
-- 😪 **Sleepy character:** The more reels you watch, the droopier they get. Resets every day.
+- 😪 **Sleepy character:** a different face for each of 9 moods, from 😃 wide awake to 🧟 zombie mode. Resets every day.
+- ⏰ **Daily reel limit (optional):** pick how many reels is enough for today. You get a quiet heads-up at 80%, a red reminder with a short sound and buzz at your limit, and another every 25 reels after that. The counter turns red once you're over, and Reports show your under-limit days and streak.
 - 📊 **Reports:** daily, weekly and monthly charts, busiest and calmest days, and a breakdown by app.
 - 🚫 **Ads aren't counted:** sponsored reels are skipped.
 - 👫 **Scroll Battles (optional):** pick a nickname (no account or email needed), add friends with a 5-character code, and compete on leaderboards (Battle, Facebook, Instagram, TikTok, Shorts) for who scrolled the least today.
@@ -40,7 +41,7 @@ Facebook and Instagram change their apps often, so counting can sometimes miss o
 
 - Only Facebook, Instagram, TikTok and YouTube are watched; events from other apps never reach DozyPal.
 - It reads only labels such as "Reels" and "Sponsored" to decide what to count. It never reads messages and never saves or sends screen content.
-- There is no internet permission at all. Counts are stored privately on your phone and reset daily.
+- Counting works fully offline. Counts are stored privately on your phone and reset daily. The internet is used only for Scroll Battles, if you join.
 
 See [PRIVACY.md](PRIVACY.md) for details.
 

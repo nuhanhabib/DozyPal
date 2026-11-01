@@ -30,6 +30,11 @@
     <string name="report_stats_day">Yesterday: %1$d reels\nMood: %2$s</string>
     <string name="report_stats_range">Daily average: %1$d reels\nBusiest day: %2$s · %3$d\nCalmest day: %4$s · %5$d</string>
     <string name="report_by_app">By app</string>
+    <string name="report_limit_day">Daily limit: %1$d of %2$d used</string>
+    <string name="report_limit_range">Under your limit of %1$d: %2$d of %3$d days</string>
+    <string name="report_streak">🔥 Streak: %1$d days in a row under your limit</string>
+    <string name="report_streak_one">🔥 Streak: 1 day under your limit</string>
+    <string name="report_streak_none">No streak yet. Stay under your limit today to start one!</string>
 
     <string name="setup_title">One step left: turn on DozyPal</string>
     <string name="setup_body">DozyPal needs Accessibility access to notice when you swipe to a new reel. Open Accessibility settings, tap DozyPal (it may be under \"Downloaded apps\") and switch it on.</string>
@@ -48,6 +53,17 @@
     <string name="drag_hint">Tip: drag the counter up or down along the edge to move it.</string>
     <string name="opacity_title">Counter opacity: %1$d%%</string>
     <string name="opacity_description">Counter opacity</string>
+
+    <string name="limit_title">Daily reel limit ⏰</string>
+    <string name="limit_body">Choose how many reels is enough for today. DozyPal reminds you when you get there.</string>
+    <string name="limit_unit">reels a day</string>
+    <string name="limit_less">Lower the limit</string>
+    <string name="limit_more">Raise the limit</string>
+    <string name="limit_sound">Sound and vibration</string>
+    <string name="limit_hint">You get a quiet heads-up at 80%, a red reminder with a sound at your limit, and another every 25 reels after that. Sound follows your phone\'s silent mode. Tip: long-press − or + to change by 50.</string>
+    <string name="limit_progress_left">%1$d of %2$d · %3$d left today</string>
+    <string name="limit_progress_reached">%1$d of %2$d · Limit reached 🛑</string>
+    <string name="limit_progress_over">%1$d of %2$d · %3$d over your limit 😬</string>
 
     <string name="edit_profile">Edit profile</string>
 

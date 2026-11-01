@@ -7,10 +7,16 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.content.SharedPreferences
+import android.media.AudioAttributes
+import android.media.AudioManager
+import android.media.RingtoneManager
 import android.os.Build
 import android.os.Handler
 import android.os.Looper
 import android.os.PowerManager
+import android.os.VibrationEffect
+import android.os.Vibrator
+import android.os.VibratorManager
 import android.view.accessibility.AccessibilityEvent
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
@@ -18,7 +24,8 @@ import java.time.format.DateTimeFormatter
 /**
  * Listens (only inside Facebook, Instagram, TikTok and YouTube, see res/xml/reel_service_config.xml)
  * for swipes to a new reel or short. A reel is counted once it has stayed on screen for [WATCH_MS], so fast scrolling
- * doesn't count. Shows the floating counter and nudge bubbles while one of those apps is open.
+ * doesn't count. Shows the floating counter and nudge bubbles while one of those apps is open, and
+ * daily limit reminders (with a short sound and buzz) when the user has set a limit.
  */
 class ReelCounterService : AccessibilityService() {
 
@@ -52,8 +59,9 @@ class ReelCounterService : AccessibilityService() {
         if (!store.counterEnabled || currentApp != app || !isUserLooking() || detector.isSponsoredNow()) {
             return@Runnable
         }
-        overlay.update(store.increment(app), store.total())
-        maybeShowNudge()
+        val count = store.increment(app)
+        overlay.update(count, store.total(), isOverLimit())
+        if (!maybeShowLimitReminder()) maybeShowNudge()
         if (Social.isJoined(this, store)) Social.requestSync(store)
     }
 
@@ -64,7 +72,8 @@ class ReelCounterService : AccessibilityService() {
     private val settingsListener = SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
         when (key) {
             CountStore.KEY_ENABLED -> if (!store.counterEnabled) hideOverlay()
-            CountStore.KEY_OVERLAY_LEFT, CountStore.KEY_OVERLAY_OPACITY -> currentApp?.let { showOverlay(it) }
+            CountStore.KEY_OVERLAY_LEFT, CountStore.KEY_OVERLAY_OPACITY,
+            CountStore.KEY_LIMIT_ENABLED, CountStore.KEY_LIMIT -> currentApp?.let { showOverlay(it) }
         }
     }
 
@@ -111,6 +120,61 @@ class ReelCounterService : AccessibilityService() {
         pendingApp = null
     }
 
+    /** Shows the next daily limit reminder if one is due; returns true if it did. */
+    private fun maybeShowLimitReminder(): Boolean {
+        if (!store.limitEnabled) return false
+        val total = store.total()
+        val limit = store.dailyLimit
+        val step = DailyLimit.stepFor(total, limit) ?: return false
+        if (step.at <= store.lastLimitAlert) return false
+        store.lastLimitAlert = step.at
+        // Don't follow the reminder with a regular nudge for the same reels.
+        store.lastNudgeMilestone = maxOf(store.lastNudgeMilestone, Nudges.reachedMilestone(total))
+
+        val name = store.userName ?: Nudges.DEFAULT_NAME
+        val crossed = step.level != DailyLimit.Level.WARNING
+        overlay.showBubble(DailyLimit.message(step, name, total, limit), alert = crossed)
+        if (crossed && store.limitSound) playLimitAlert()
+        return true
+    }
+
+    private fun isOverLimit(): Boolean = store.limitEnabled && store.total() >= store.dailyLimit
+
+    /** A short notification sound and double buzz, following the phone's sound mode (silent stays silent). */
+    private fun playLimitAlert() {
+        val audio = getSystemService(AudioManager::class.java) ?: return
+        when (audio.ringerMode) {
+            AudioManager.RINGER_MODE_NORMAL -> {
+                playSound()
+                vibrate()
+            }
+            AudioManager.RINGER_MODE_VIBRATE -> vibrate()
+            else -> Unit
+        }
+    }
+
+    private fun playSound() {
+        runCatching {
+            val uri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION) ?: return
+            val ringtone = RingtoneManager.getRingtone(this, uri) ?: return
+            ringtone.audioAttributes = AudioAttributes.Builder()
+                .setUsage(AudioAttributes.USAGE_NOTIFICATION_EVENT)
+                .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                .build()
+            ringtone.play()
+        }
+    }
+
+    private fun vibrate() {
+        val vibrator = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            getSystemService(VibratorManager::class.java)?.defaultVibrator
+        } else {
+            @Suppress("DEPRECATION")
+            getSystemService(Vibrator::class.java)
+        }
+        runCatching { vibrator?.vibrate(VibrationEffect.createWaveform(longArrayOf(0, 120, 90, 120), -1)) }
+    }
+
     private fun maybeShowNudge() {
         val total = store.total()
         val name = store.userName ?: Nudges.DEFAULT_NAME
@@ -138,7 +202,7 @@ class ReelCounterService : AccessibilityService() {
         if (!store.counterEnabled) return
         currentApp = app
         awayChecks = 0
-        overlay.show(store.count(app), store.total(), store.overlayOnLeft, store.overlayOpacity, store.overlayY)
+        overlay.show(store.count(app), store.total(), isOverLimit(), store.overlayOnLeft, store.overlayOpacity, store.overlayY)
         handler.removeCallbacks(foregroundCheck)
         handler.postDelayed(foregroundCheck, FOREGROUND_POLL_MS)
     }

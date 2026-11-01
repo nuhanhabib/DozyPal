@@ -93,8 +93,38 @@ class ReportsActivity : Activity() {
             )
         }
 
+        if (store.limitEnabled) stats.append("\n\n" + limitSummary(today, days, totals, total))
+
         val perApp = ReelApp.entries.associateWith { app -> perDay.sumOf { it[app] ?: 0 } }
         renderBreakdown(perApp, total)
+    }
+
+    /** Uses the current limit for every day shown, and only counts days since DozyPal started recording. */
+    private fun limitSummary(today: LocalDate, days: List<LocalDate>, totals: List<Int>, total: Int): String {
+        val limit = store.dailyLimit
+        val first = store.firstRecordedDay() ?: today
+        val usage = if (period == Period.DAY) {
+            getString(R.string.report_limit_day, total, limit)
+        } else {
+            val tracked = days.indices.filter { !days[it].isBefore(first) }
+            getString(R.string.report_limit_range, limit, tracked.count { totals[it] < limit }, tracked.size)
+        }
+        return usage + "\n" + streakText(today, first, limit)
+    }
+
+    /** Days in a row under the limit, ending today if today is still under it, otherwise yesterday. */
+    private fun streakText(today: LocalDate, first: LocalDate, limit: Int): String {
+        var day = if (store.total() < limit) today else today.minusDays(1)
+        var streak = 0
+        while (!day.isBefore(first) && store.dayCounts(day).values.sum() < limit) {
+            streak++
+            day = day.minusDays(1)
+        }
+        return when (streak) {
+            0 -> getString(R.string.report_streak_none)
+            1 -> getString(R.string.report_streak_one)
+            else -> getString(R.string.report_streak, streak)
+        }
     }
 
     private fun comparisonText(total: Int, previous: Int): String {

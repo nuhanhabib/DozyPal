@@ -16,6 +16,7 @@ import android.widget.TextView
  * button) that can be dragged up and down, plus a short-lived nudge bubble beside it.
  * Both use accessibility overlay windows, so no "draw over other apps" permission is needed.
  * Only the tab itself takes touches (for dragging); the bubble ignores them.
+ * Once the daily limit is crossed the tab turns red, and limit reminders use a red bubble.
  */
 class CounterOverlay(
     context: Context,
@@ -28,6 +29,7 @@ class CounterOverlay(
     private var tabAttached = false
     private var bubbleAttached = false
     private var onLeft = false
+    private var overLimit = false
     private var tabParams: WindowManager.LayoutParams? = null
 
     private val tab = TextView(context).apply {
@@ -41,15 +43,12 @@ class CounterOverlay(
 
     private val bubble = TextView(context).apply {
         textSize = 14f
-        setTextColor(0xFF2E1065.toInt())
         maxWidth = (screenWidth * 0.65f).toInt()
         setPadding(dp(14), dp(10), dp(14), dp(10))
-        background = GradientDrawable().apply {
-            cornerRadius = dp(16).toFloat()
-            setColor(0xF2FFFFFF.toInt())
-            setStroke(dp(2), 0xFF7C3AED.toInt())
-        }
     }
+
+    private val nudgeBackground = bubbleBackground(fill = 0xF2FFFFFF.toInt(), stroke = 0xFF7C3AED.toInt())
+    private val alertBackground = bubbleBackground(fill = 0xF7FEF2F2.toInt(), stroke = ALERT_COLOR)
 
     private val hideBubble = Runnable { removeBubble() }
 
@@ -57,8 +56,8 @@ class CounterOverlay(
         enableDragging()
     }
 
-    fun show(count: Int, total: Int, left: Boolean, opacityPercent: Int, savedY: Int) {
-        update(count, total)
+    fun show(count: Int, total: Int, overLimit: Boolean, left: Boolean, opacityPercent: Int, savedY: Int) {
+        update(count, total, overLimit)
         tab.alpha = opacityPercent / 100f
         if (tabAttached && left == onLeft) return
         if (tabAttached) windowManager.removeView(tab)
@@ -72,20 +71,28 @@ class CounterOverlay(
     }
 
     /** Shows this app's [count]; the face matches today's [total] across all apps, like the home screen. */
-    fun update(count: Int, total: Int) {
+    fun update(count: Int, total: Int, overLimit: Boolean) {
         tab.text = "${Mood.forCount(total).emoji}\n$count"
+        if (overLimit != this.overLimit) {
+            this.overLimit = overLimit
+            (tab.background as? GradientDrawable)?.setColor(tabColor())
+        }
     }
 
-    fun showBubble(text: String) {
+    /** [alert] is for daily limit reminders: a red bubble that stays a little longer, and the tab bounces. */
+    fun showBubble(text: String, alert: Boolean = false) {
         val params = tabParams ?: return
         if (!tabAttached) return
         bubble.text = text
+        bubble.background = if (alert) alertBackground else nudgeBackground
+        bubble.setTextColor(if (alert) 0xFF7F1D1D.toInt() else 0xFF2E1065.toInt())
         bubble.removeCallbacks(hideBubble)
         val bubbleParams = layoutParams(onLeft, x = dp(56), y = params.y, touchable = false)
         if (bubbleAttached) windowManager.updateViewLayout(bubble, bubbleParams)
         else windowManager.addView(bubble, bubbleParams)
         bubbleAttached = true
-        bubble.postDelayed(hideBubble, BUBBLE_MS)
+        bubble.postDelayed(hideBubble, if (alert) ALERT_BUBBLE_MS else BUBBLE_MS)
+        if (alert) bounceTab()
     }
 
     fun hide() {
@@ -100,6 +107,13 @@ class CounterOverlay(
         if (!bubbleAttached) return
         windowManager.removeView(bubble)
         bubbleAttached = false
+    }
+
+    private fun bounceTab() {
+        tab.animate().cancel()
+        tab.animate().scaleX(1.25f).scaleY(1.25f).setDuration(150).withEndAction {
+            tab.animate().scaleX(1f).scaleY(1f).setDuration(250).start()
+        }.start()
     }
 
     /** Drag the tab up and down along the edge; the new position is remembered. */
@@ -125,12 +139,20 @@ class CounterOverlay(
         }
     }
 
+    private fun tabColor() = if (overLimit) ALERT_COLOR else TAB_COLOR
+
     /** Rounded only on the side facing the screen, flat against the edge. */
     private fun tabBackground(left: Boolean) = GradientDrawable().apply {
         val r = dp(24).toFloat()
         cornerRadii = if (left) floatArrayOf(0f, 0f, r, r, r, r, 0f, 0f)
         else floatArrayOf(r, r, 0f, 0f, 0f, 0f, r, r)
-        setColor(0xFF6D28D9.toInt())
+        setColor(tabColor())
+    }
+
+    private fun bubbleBackground(fill: Int, stroke: Int) = GradientDrawable().apply {
+        cornerRadius = dp(16).toFloat()
+        setColor(fill)
+        setStroke(dp(2), stroke)
     }
 
     private fun layoutParams(left: Boolean, x: Int, y: Int, touchable: Boolean) = WindowManager.LayoutParams(
@@ -151,5 +173,8 @@ class CounterOverlay(
 
     private companion object {
         const val BUBBLE_MS = 4_500L
+        const val ALERT_BUBBLE_MS = 6_000L
+        const val TAB_COLOR = 0xFF6D28D9.toInt()
+        const val ALERT_COLOR = 0xFFDC2626.toInt()
     }
 }

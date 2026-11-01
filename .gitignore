@@ -21,3 +21,6 @@ signing/
 .env
 .env.*
 google-services.json
+Dozypal's Security/
+*password*.txt
+KEEP-SAFE*

@@ -119,6 +119,26 @@
                 android:text="@string/reset_note"
                 android:textSize="12sp" />
 
+            <!-- Progress towards the daily limit; shown only when a limit is set. -->
+            <LinearLayout
+                android:id="@+id/limit_progress_group"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:orientation="vertical"
+                android:visibility="gone">
+                <ProgressBar
+                    android:id="@+id/limit_progress"
+                    style="?android:attr/progressBarStyleHorizontal"
+                    android:layout_width="match_parent"
+                    android:layout_height="8dp" />
+                <TextView
+                    android:id="@+id/limit_progress_text"
+                    style="@style/CardBody"
+                    android:gravity="center"
+                    android:textSize="13sp" />
+            </LinearLayout>
+
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -146,6 +166,110 @@
                     <TextView android:id="@+id/youtube_count" style="@style/AppCountNumber" />
                     <TextView style="@style/AppCountLabel" android:text="@string/youtube" />
                 </LinearLayout>
+            </LinearLayout>
+        </LinearLayout>
+
+        <LinearLayout style="@style/Card">
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+                    <TextView style="@style/CardTitle" android:text="@string/limit_title" />
+                    <TextView style="@style/CardBody" android:text="@string/limit_body" />
+                </LinearLayout>
+                <Switch
+                    android:id="@+id/limit_switch"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:contentDescription="@string/limit_title" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/limit_settings"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+                    <Button
+                        android:id="@+id/limit_minus"
+                        style="@style/SecondaryButton"
+                        android:layout_width="56dp"
+                        android:layout_height="wrap_content"
+                        android:contentDescription="@string/limit_less"
+                        android:paddingStart="0dp"
+                        android:paddingEnd="0dp"
+                        android:text="−"
+                        android:textSize="22sp" />
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:gravity="center"
+                        android:orientation="vertical">
+                        <TextView
+                            android:id="@+id/limit_value"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textColor="@color/text"
+                            android:textSize="30sp"
+                            android:textStyle="bold" />
+                        <TextView
+                            style="@style/CardBody"
+                            android:layout_width="wrap_content"
+                            android:layout_marginTop="0dp"
+                            android:text="@string/limit_unit" />
+                    </LinearLayout>
+                    <Button
+                        android:id="@+id/limit_plus"
+                        style="@style/SecondaryButton"
+                        android:layout_width="56dp"
+                        android:layout_height="wrap_content"
+                        android:contentDescription="@string/limit_more"
+                        android:paddingStart="0dp"
+                        android:paddingEnd="0dp"
+                        android:text="+"
+                        android:textSize="22sp" />
+                </LinearLayout>
+
+                <!-- Quick picks, filled in from DailyLimit.PRESETS. -->
+                <LinearLayout
+                    android:id="@+id/limit_presets"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:background="@drawable/segment_bg"
+                    android:orientation="horizontal"
+                    android:padding="4dp" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+                    <TextView
+                        style="@style/CardTitle"
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:text="@string/limit_sound" />
+                    <Switch
+                        android:id="@+id/limit_sound_switch"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:contentDescription="@string/limit_sound" />
+                </LinearLayout>
+                <TextView style="@style/CardBody" android:text="@string/limit_hint" />
             </LinearLayout>
         </LinearLayout>
 
