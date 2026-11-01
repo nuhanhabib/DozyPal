@@ -12,6 +12,7 @@ import android.media.AudioManager
 import android.media.RingtoneManager
 import android.os.Build
 import android.os.Handler
+import android.os.HandlerThread
 import android.os.Looper
 import android.os.PowerManager
 import android.os.VibrationEffect
@@ -37,6 +38,12 @@ class ReelCounterService : AccessibilityService() {
     private val handler = Handler(Looper.getMainLooper())
     private var currentApp: ReelApp? = null
     private var pendingApp: ReelApp? = null
+    // The ad check runs in the background shortly before the count is due, so counting stays on time.
+    private val adCheckThread = HandlerThread("DozyPal-ad-check").apply { start() }
+    private val adCheckHandler = Handler(adCheckThread.looper)
+    private var pendingToken = 0
+    private var pendingIsAd: Boolean? = null
+    private var waitingForAdCheck = false
     private var awayChecks = 0
 
     // Events only arrive from the watched apps, so we poll to notice when the user leaves them.
@@ -53,12 +60,24 @@ class ReelCounterService : AccessibilityService() {
         }
     }
 
+    private val startAdCheck = Runnable {
+        val app = pendingApp ?: return@Runnable
+        val token = pendingToken
+        adCheckHandler.post {
+            val isAd = detector.isSponsoredNow(app)
+            handler.post { onAdChecked(token, isAd) }
+        }
+    }
+
     private val countAfterWatching = Runnable {
         val app = pendingApp ?: return@Runnable
-        pendingApp = null
-        if (!store.counterEnabled || currentApp != app || !isUserLooking() || detector.isSponsoredNow()) {
+        // Normally the ad check finished a second ago; if not, count as soon as it does.
+        val isAd = pendingIsAd ?: run {
+            waitingForAdCheck = true
             return@Runnable
         }
+        clearPending()
+        if (!store.counterEnabled || currentApp != app || !isUserLooking() || isAd) return@Runnable
         val count = store.increment(app)
         overlay.update(count, store.total(), isOverLimit())
         if (!maybeShowLimitReminder()) maybeShowNudge()
@@ -110,14 +129,29 @@ class ReelCounterService : AccessibilityService() {
 
     /** Count this reel only if the user is still on it after [WATCH_MS]. */
     private fun scheduleCount(app: ReelApp) {
-        handler.removeCallbacks(countAfterWatching)
+        cancelPendingCount()
         pendingApp = app
+        handler.postDelayed(startAdCheck, WATCH_MS - AD_CHECK_LEAD_MS)
         handler.postDelayed(countAfterWatching, WATCH_MS)
     }
 
     private fun cancelPendingCount() {
+        handler.removeCallbacks(startAdCheck)
         handler.removeCallbacks(countAfterWatching)
+        clearPending()
+    }
+
+    private fun clearPending() {
         pendingApp = null
+        pendingToken++ // results of an ad check still running are ignored
+        pendingIsAd = null
+        waitingForAdCheck = false
+    }
+
+    private fun onAdChecked(token: Int, isAd: Boolean) {
+        if (token != pendingToken) return
+        pendingIsAd = isAd
+        if (waitingForAdCheck) countAfterWatching.run()
     }
 
     /** Shows the next daily limit reminder if one is due; returns true if it did. */
@@ -218,6 +252,7 @@ class ReelCounterService : AccessibilityService() {
 
     override fun onDestroy() {
         hideOverlay()
+        adCheckThread.quitSafely()
         if (::store.isInitialized) {
             store.prefs.unregisterOnSharedPreferenceChangeListener(settingsListener)
             unregisterReceiver(screenOffReceiver)
@@ -227,6 +262,7 @@ class ReelCounterService : AccessibilityService() {
 
     private companion object {
         const val WATCH_MS = 3_000L
+        const val AD_CHECK_LEAD_MS = 1_000L
         const val FOREGROUND_POLL_MS = 500L
         const val AWAY_CHECKS_TO_HIDE = 2
         const val NIGHT_NUDGE_GAP_MS = 30 * 60 * 1000L

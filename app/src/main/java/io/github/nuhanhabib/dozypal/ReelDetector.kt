@@ -21,7 +21,8 @@ enum class ReelChange { NONE, FORWARD, BACKWARD }
  *  2. The screen must mention "Reels" (Facebook/Instagram) or "Shorts" (YouTube), so stories and
  *     normal long videos are skipped. TikTok needs no label.
  *  3. Forward and backward moves are reported separately; only forward ones can be counted.
- *  4. Sponsored reels (ads) are not counted ([isSponsoredNow]).
+ *  4. Sponsored reels (ads) are not counted ([isSponsoredNow]): labels such as "Sponsored" or "Ad",
+ *     and on YouTube also ad buttons such as "Visit site" or "Install".
  *
  * Only labels such as "Reels" or "Sponsored" are checked. Nothing is stored or sent.
  */
@@ -68,8 +69,30 @@ class ReelDetector(
         return if (scrolledUp) ReelChange.BACKWARD else ReelChange.FORWARD
     }
 
-    fun isSponsoredNow(): Boolean =
-        anyVisibleNode(rootProvider()) { label -> AD_WORDS.any { label.equals(it, ignoreCase = true) } }
+    /**
+     * Whether the reel on screen is an ad. Safe to call from a background thread.
+     * Asks the app for matching labels first (one quick call per word), then falls back to walking the
+     * visible part of the screen, since some apps draw labels Android's text search can't find.
+     */
+    fun isSponsoredNow(app: ReelApp): Boolean {
+        val root = rootProvider() ?: return false
+        val ctas = if (app == ReelApp.YOUTUBE) YOUTUBE_AD_BUTTONS else emptyList()
+        val match = { label: String -> isAdLabel(label) || ctas.any { label.equals(it, ignoreCase = true) } }
+        val found = (AD_WORDS + ctas).any { word ->
+            runCatching { root.findAccessibilityNodeInfosByText(word) }.getOrNull().orEmpty()
+                .any { it.isVisibleToUser && labelsOf(it).any(match) }
+        }
+        return found || anyVisibleNode(root, AD_CHECK_MAX_NODES, skipHidden = true, match)
+    }
+
+    /** "Sponsored", "Sponsored · example.com", "Ad", "Ad · 0:15", but not "Add" or a caption mentioning "ad". */
+    private fun isAdLabel(label: String): Boolean = AD_WORDS.any { word ->
+        val ignoreCase = word != "Ad" // "Ad" must be capitalised, so words like "ad" in captions don't match
+        label.startsWith(word, ignoreCase) && (label.length == word.length || !label[word.length].isLetterOrDigit())
+    }
+
+    private fun labelsOf(node: AccessibilityNodeInfo): List<String> =
+        listOfNotNull(node.text?.toString()?.trim(), node.contentDescription?.toString()?.trim())
 
     private fun looksLikeReelPager(source: AccessibilityNodeInfo, app: ReelApp): Boolean {
         val id = source.viewIdResourceName.orEmpty()
@@ -98,28 +121,31 @@ class ReelDetector(
         reelsScreenApp = app
         reelsScreenCheckedAt = now
         val words = REEL_WORDS[app].orEmpty()
-        reelsScreenCached = anyVisibleNode(rootProvider()) { label ->
+        reelsScreenCached = anyVisibleNode(rootProvider(), MAX_NODES, skipHidden = false) { label ->
             words.any { label.contains(it, ignoreCase = true) }
         }
         return reelsScreenCached
     }
 
-    /** Breadth-first search over visible on-screen labels, capped so it stays fast. */
+    /**
+     * Breadth-first search over visible on-screen labels, capped so it stays fast.
+     * With [skipHidden], parts of the screen that aren't visible (such as preloaded next reels) are skipped.
+     */
     private inline fun anyVisibleNode(
         root: AccessibilityNodeInfo?,
+        maxNodes: Int,
+        skipHidden: Boolean,
         match: (String) -> Boolean,
     ): Boolean {
         root ?: return false
         val queue = ArrayDeque<AccessibilityNodeInfo>().apply { add(root) }
         var visited = 0
-        while (queue.isNotEmpty() && visited < MAX_NODES) {
+        while (queue.isNotEmpty() && visited < maxNodes) {
             val node = queue.removeFirst()
             visited++
-            if (node.isVisibleToUser) {
-                val text = node.text?.toString()?.trim()
-                val description = node.contentDescription?.toString()?.trim()
-                if ((text != null && match(text)) || (description != null && match(description))) return true
-            }
+            val visible = node.isVisibleToUser
+            if (visible && labelsOf(node).any(match)) return true
+            if (skipHidden && !visible) continue
             for (i in 0 until node.childCount) node.getChild(i)?.let(queue::add)
         }
         return false
@@ -129,6 +155,7 @@ class ReelDetector(
         private const val SWIPE_GAP_MS = 900L
         private const val REELS_CHECK_CACHE_MS = 3_000L
         private const val MAX_NODES = 500
+        private const val AD_CHECK_MAX_NODES = 1_500
 
         private val REEL_IDS = mapOf(
             ReelApp.INSTAGRAM to listOf("clips_viewer", "clips_video", "reel_viewer"),
@@ -141,5 +168,10 @@ class ReelDetector(
             ReelApp.YOUTUBE to listOf("shorts", "শর্টস"),
         )
         private val AD_WORDS = listOf("Sponsored", "Ad", "স্পনসর্ড", "স্পন্সর্ড", "বিজ্ঞাপন")
+        // Buttons only YouTube Shorts ads show. ("Learn more" is left out: it also appears on info panels.)
+        private val YOUTUBE_AD_BUTTONS = listOf(
+            "Visit site", "Visit advertiser", "Install", "Shop now", "Sign up", "Book now",
+            "Apply now", "Get offer", "Order now", "Get quote",
+        )
     }
 }
